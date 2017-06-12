@@ -1,0 +1,5 @@
+(fp_lib_table
+  (lib (name teensy_3-2_bottomLess)(type KiCad)(uri "$(KIPRJMOD)/teensy_3-2_bottomLess.pretty")(options "")(descr ""))
+  (lib (name R_SHUNT_3920)(type KiCad)(uri "$(KIPRJMOD)/R_SHUNT_3920.pretty")(options "")(descr ""))
+  (lib (name TO-251_IPAK_Slammed)(type KiCad)(uri "$(KIPRJMOD)/TO-251_IPAK_Slammed.pretty")(options "")(descr ""))
+)
