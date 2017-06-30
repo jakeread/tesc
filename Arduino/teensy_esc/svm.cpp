@@ -11,6 +11,7 @@ SVM::SVM(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLoC)
   analogWriteResolution(LEG_PWMRES);
   // 8-bit analog (pwm) write resolution // values 0-255
   // & maching freq as per https://www.pjrc.com/teensy/td_pulse.html set in motorleg
+  // altho u r going to need to coordinate pwm's on some more-accessible timer, call readADC events during 'on' intervals only !
 
   MLA = new MotorLeg(pinHiA, pinLoA); // TODO: rename to phases U V M
   MLB = new MotorLeg(pinHiB, pinLoB);

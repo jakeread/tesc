@@ -10,7 +10,7 @@
 #define RUN_ENCODER_LOOP        1
 #define RUN_SVM_LOOP            0
 #define RUN_BLDC_LOOP           1
-#define IS_BBESC_GRINDER        1
+#define IS_BBESC_GRINDER        0
 
 #if RUN_BLDC_DEBUG_LOOP || RUN_SVM_DEBUG_LOOP
   IntervalTimer Debug_Timer;
@@ -22,7 +22,7 @@
 #endif
 
 #if RUN_SVM_LOOP || RUN_SVM_DEBUG_LOOP
-  SVM TSVM(3,4,5,6,9,10);
+  SVM TSVM(10, 9, 6, 5, 4, 3);
 #endif
 
 #if RUN_SVM_LOOP
@@ -30,7 +30,7 @@
 #endif
 
 #if RUN_BLDC_LOOP || RUN_BLDC_DEBUG_LOOP
-  BLDC TBLDC(3, 4, 5, 6, 9, 10);
+  BLDC TBLDC(10, 9, 6, 5, 4, 3);
 #endif
 
 #if RUN_BLDC_LOOP
@@ -157,26 +157,24 @@ void Debug_Loop(){
 
 uint16_t dutyUser = 0; // what is threshold duty?
 uint16_t dutyDished = 0;
-uint16_t phaseAdvanceUser = 0;
-uint16_t phaseAdvanceDished = 0;
 uint16_t encoderFiltered = 0;
 uint8_t currentCom = 0;
 bool dir = 0;
+uint32_t tick = 0;
+uint32_t tickTimer = BLDC_LOOP_HZ / BLDC_REPORT_HZ;
 
 void BLDC_Loop(){
 
   digitalWrite(13, !digitalRead(13));
 
-  dutyUser = analogRead(9);
-  dutyDished = map(dutyUser,1024,0,110,255); 
-
-  phaseAdvanceUser = analogRead(8);
-  phaseAdvanceDished = map(phaseAdvanceUser, 0, 1024, 0, MOTOR_MODULO); // /6 ? not sure of this yet
-
-  if(!digitalRead(FWD_PIN)){
-    dir = 1;
-  } else if(!digitalRead(REV_PIN)){
+  dutyUser = analogRead(DEBUG_POT_PIN);
+  
+  if (dutyUser < 512) {
     dir = 0;
+    dutyDished = map(dutyUser, 512, 0, 110, 255); 
+  } else if (dutyUser >= 512) {
+    dir = 1;
+    dutyDished = map(dutyUser, 512, 1024, 110, 255);
   } else {
     dutyDished = 0;
   }
@@ -185,9 +183,22 @@ void BLDC_Loop(){
 
   TBLDC.dir(dir);
   TBLDC.duty(dutyDished);
-  //TBLDC.advance(phaseAdvanceDished); // 0 to disable // set default :: THIS NOT IMPLEMENTED
+
+  if(tick % tickTimer == 0){
+    Serial.println(""); // print 1st: i.e. at 'end' of last loop... so that spring has come out of motor
+    Serial.print("\tIN:\t");
+    Serial.print(dutyUser);
+    Serial.print("\tDIR:\t");
+    Serial.print(dir);
+    Serial.print("\tDUTY:\t");
+    Serial.print(dutyDished);
+    Serial.print("\tENC:\t");
+    Serial.print(encoderFiltered);
+  }
+
   TBLDC.loop(encoderFiltered);       // NEEDS REWRITE
 
+  tick ++;
 }
 
 #endif
@@ -198,10 +209,8 @@ void BLDC_Loop(){
 
 // LOOP VARS
 
-uint16_t dutyUser = 0; // what is threshold duty?
-uint16_t dutyDished = 0;
-uint16_t phaseAdvanceUser = 0;
-uint16_t phaseAdvanceDished = 0;
+uint16_t dutyDirUser = 0; // what is threshold duty?
+uint16_t dutyDirDished = 0;
 uint16_t encoderFiltered = 0;
 uint16_t encoderModulod = 0;
 uint8_t currentCom = 0;
@@ -215,30 +224,17 @@ void Debug_Loop() {
 
   digitalWrite(13, !digitalRead(13));
 
-  dutyUser = analogRead(9);
-  dutyDished = map(dutyUser,1024,0,110,255); 
-
-  phaseAdvanceUser = analogRead(8);
-  phaseAdvanceDished = map(phaseAdvanceUser, 0, 1024, 0, MOTOR_MODULO); // /6 ? not sure of this yet
-
-
-  if(!digitalRead(FWD_PIN)){
-    dir = 1;
-  } else if(!digitalRead(REV_PIN)){
-    dir = -1;
-  } else {
-    dir = 0;
-    dutyDished = 0;
-  }
+  dutyDirUser = analogRead(DEBUG_POT_PIN);
+  dutyDirDished = map(dutyDirUser, 0, 1024, 110, 255);
 
   if (dblCounter % comDivisor == 0) {
 
-    TBLDC.duty(dutyDished);
+    TBLDC.duty(dutyDirDished);
 
     comCounter ++;
     TBLDC.commutate(comCounter % 6);
 
-    delay(1000);
+    delay(2000); // motor moves to comloc position, settles
 
     for(int i = 0; i < AS5047_AVERAGING; i ++){
       TAS5047.readNow();
@@ -250,13 +246,15 @@ void Debug_Loop() {
   
     Serial.println(""); // print 1st: i.e. at 'end' of last loop... so that spring has come out of motor
     Serial.print("DU:\t");
-    Serial.print(dutyUser);
+    Serial.print(dutyDirUser);
     Serial.print("\tDD:\t");
-    Serial.print(dutyDished);
+    Serial.print(dutyDirDished);
+    /*
     Serial.print("\tPAU:\t");
     Serial.print(phaseAdvanceUser);
     Serial.print("\tPAD:\t");
     Serial.print(phaseAdvanceDished);
+    */
     Serial.print("\tDIR:\t");
     Serial.print(dir);
     Serial.print("\tEF:\t");

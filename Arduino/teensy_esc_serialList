@@ -1,0 +1,27 @@
+Serial Architecture:
+
+W/ Commands & Replies
+
+'Active Mode' commands:
+	G0A<pos>F<rate> 				// move A axis to this position (rapid) (rads default, set to degs with G20)
+	G1A<pos>F<rate>					// move A axis to this position (at set speed) 
+	T0A<torque> 					// set torque on A axis between -255, 255 (sign indicates direction)
+
+'Calibrations' commands:
+	G28 							// homing routine!
+
+'Setups / Sets' commands:
+	M112 							// emergency stop ! shuts all down, does not finish planner
+	M114 							// get current position
+	M119 							// get endstop status
+	M201 S<torque> 					// set max positioning torque
+	M202 S<speed> 					// set max positioning speed (rads / degs w/ G20 / G21)
+
+	// set & get per-axis PID terms?
+	// set & get encoder offset, modulo terms
+	// auto-tune routines // auto encoder routines ... 
+	// readoff all pertinent tuning vars
+
+'Readoff' commands:
+	R0V<#var>:<#var>:<#var>F<hz>	// Readoff these vars at this frequency
+									// only one clock for var-reading, so any calls to R0 will update...

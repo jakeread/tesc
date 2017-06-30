@@ -1,0 +1,8 @@
+New Circuit Wishlist
+
+Properly sized gate-driver caps
+SPI plugs -> AS5311, AS5047 with shielding, or something!
+SPI RS232 drivers & chip select solution that works ... differential signals, all of them
+Port for 'hack' sol'ns i.e. PWM, analog potentiometer inputs
+Offset & 'nice' resistor networks for V_Sense, A_Sense (requires much DRV8302 datasheet reading)
+DRV8302
