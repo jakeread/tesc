@@ -24,13 +24,14 @@ class SVM{
   double getTheta();
   double getSetVal(int index);
 
-  void loop(uint32_t pos);
+  void loop();
 
   MotorLeg* MLA;
   MotorLeg* MLB;
   MotorLeg* MLC;
   
   private:
+  uint32_t _posNow;
   double sqrt2;
   int _duty;
   int _dir;

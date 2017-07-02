@@ -1,0 +1,45 @@
+BBESC // Teensy ESC Top-level Architecture
+
+Timers
+	Sampler			(40 kHz)(?) Sampling, averages / filtered / cleaned-up values on request
+	MotorControl 	(15 kHz)(?) Does Motor-control stuff: BLDC (now) commutation, FOC control..
+
+Kernel->
+	BLDC->MotorLegs								(operates motor while in BLDC mode)
+	FOC->SVM->MotorLegs 						(operates motor in FOC mode)
+	Sampler	->AS5047	->ringBuffers 			(home of all measurements)
+						->t3spi
+			->ADC'S 	->ringBuffers
+			->i2c's etc would live here
+	SPB											(Serial Block and Parse || chit-chat)
+	Shell										(acts like terminal, write commands here)
+	Streamer									(fires data -> roboscpd for analysis)
+
+	*not implemented*
+	Planner	->Kinematics						(fun fun fun maths :| want 2 be here)
+			->GCodeBuffer ->GCode[s] 			(ringbuffer of gcode objects)
+
+Config.h
+	global vars / constants
+
+
+TBD's immediate
+
+	Implement a torque command!
+		torque 
+		torque duty 255 dir 0
+		torque duty 113
+		torque dir 1
+
+	-> roboscpd
+
+	Do a stream  !
+	Do a capture !
+		-> Capture Data at fast-as-possible rate for a given sample-time
+		-> dish it all on the serial line, in chunk.
+		-> 0.01 -> 2s intervals ... or define max by defining data sizes
+
+	Do proper-foc by watching these waveforms ~
+	Optimize for speed, identify and eliminate 'knocking' in BLDC?
+		-> if it works w/o knocking on a purely timing-based commutation, you have a filtering / encoder-hysterisis issue
+		-> i.e. there is a point where the filtered value goes over-and-back between the 'commutate' threshold, and the motor very briefly attempts to knock between these two switched states. this is a point where you want hysterisis. 

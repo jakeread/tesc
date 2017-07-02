@@ -3,9 +3,10 @@
 
 #include <Arduino.h>
 #include "motorleg.h"
-#include "encoder_as5047.h"
 #include "config.h"
 
+#define BLDC_INPUTMODE_POT        1
+#define BLDC_INPUTMODE_SHELL      0
 
 class BLDC{
 
@@ -17,18 +18,33 @@ class BLDC{
   MotorLeg* MLC;
   
   void init();          // starts timers
-  void duty(int duty);  // set rms pwm val
-  void dir(bool dir);   // set direction for commutation
+  bool duty(int duty);  // set rms pwm val
+  int getDuty();
+  bool dir(bool dir);   // set direction for commutation
+  bool getDir();
   void advance(int advance);    // set commutation freq (updates timer)
-  void loop(uint16_t posNow);
+  void clcommutate();
+  void pot_input_update();
+  int getInputMode();
+  bool setInputMode(int mode);
   void commutate(uint8_t comPos);
 
   void prntCzc();
 
   private:
+
+  // vars for update fc'n
+  uint16_t _dutyUser;
+  uint16_t _dutyDished;
+  
+  
   int _duty;
   int _dir; // -1 or 1
   int _advance;
+  
+  int _mode;
+  int _check;
+  int _inputMode;
 
   int _comloc;
   unsigned long _lastcom;

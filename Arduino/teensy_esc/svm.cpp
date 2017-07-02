@@ -2,8 +2,10 @@
 // &address of
 // *value pointed to by this pointer
 
-#include "motorleg.h"
 #include "svm.h"
+#include "kernel.h"
+#include "encoder_as5047.h"
+#include "motorleg.h"
 #include "trig.h"
 
 SVM::SVM(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLoC){
@@ -102,8 +104,9 @@ double SVM::getTheta(){
   return _theta;
 }
 
-void SVM::loop(uint32_t pos){
-  _theta = (pos % MOTOR_MODULO) * POS_TO_THETA + _dir*PHASE_ADVANCE;
+void SVM::loop(){
+  _posNow = KERNEL->as5047->filteredInt();
+  _theta = (_posNow % MOTOR_MODULO) * POS_TO_THETA + _dir*PHASE_ADVANCE;
   if(_theta >= TWO_PI){
     _theta -= TWO_PI;
   } else if (_theta < 0){

@@ -1,6 +1,7 @@
 // does straightforward BLDC commutation
-
 #include "bldc.h"
+#include "kernel.h"
+#include "encoder_as5047.h"
 
 BLDC::BLDC(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLoC){
 
@@ -25,6 +26,7 @@ BLDC::BLDC(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLo
 }
 
 void BLDC::init(){
+  _inputMode = BLDC_INPUTMODE_POT;
 }
 
 void BLDC::prntCzc(){
@@ -38,20 +40,58 @@ void BLDC::prntCzc(){
   Serial.println(" ");
 }
 
-void BLDC::duty(int duty){
-  _duty = duty;
+bool BLDC::duty(int duty){
+  if(duty > 0 && duty < 256){
+    _duty = duty;
+    return true;
+  } else {
+    return false;
+  }
 }
 
-void BLDC::dir(bool dir){
+int BLDC::getDuty(){
+  return _duty;
+}
+
+bool BLDC::dir(bool dir){
   _dir = dir;
+  return true;
+}
+
+bool BLDC::getDir(){
+  return _dir;
 }
 
 void BLDC::advance(int advance){
   _advance = advance;
 }
 
+int BLDC::getInputMode(){
+  return _inputMode;
+}
 
-void BLDC::loop(uint16_t posNow){
+bool BLDC::setInputMode(int mode){
+  if(mode == BLDC_INPUTMODE_POT || mode == BLDC_INPUTMODE_SHELL){
+    _inputMode = mode;
+  } else {
+    Serial.println("bldc->setInputMode error");
+  }
+}
+
+void BLDC::pot_input_update(){
+  _dutyUser = analogRead(DEBUG_POT_PIN);
+  if (_dutyUser < 512) {
+    this->dir(0);
+    this->duty(map(_dutyUser, 512, 0, 110, 255)); 
+  } else if (_dutyUser >= 512) {
+    this->dir(1);
+    this->duty(map(_dutyUser, 512, 1024, 110, 255));
+  } else {
+    this->duty(0);
+  }
+}
+
+void BLDC::clcommutate(){
   /*
    * OK: Have a Duty-Cycle (eventually Torque) setting, and a direction setting
    * SO: get a rolling-averaged position estimate (noInterrupts? -> or rollingAverage doesn't use most-recent value, so if it's in the process of being written we don't f...)
@@ -62,28 +102,21 @@ void BLDC::loop(uint16_t posNow){
   /*
    * Do Modulo: for splitting Encoder (0-AS5047_RESOLUTION Physical Period, into 0-BLDC_MODULO Electrical Period)
    */
-  _posNow = posNow;
-  
+  _posNow = KERNEL->as5047->filteredInt();
   _modulo = _posNow % MOTOR_MODULO;
-
   /*
-  
   Serial.print("Duty: ");
   Serial.print(_duty);
   Serial.print(" Dir: ");
   Serial.print(_dir);
-  
   Serial.print(" posNow: ");
   Serial.print(_posNow);
   Serial.print(" Modulo: ");
   Serial.println(_modulo);
-
   */
-  
   /* ENTER CONFIG
    *  Needs to update zone-values per pole-number
    */
-
   if(_modulo >= _czc[0] && _modulo < _czc[1]){
     _comZone = 0;
   } else if (_modulo >= _czc[1] && _modulo < _czc[2]){
@@ -97,12 +130,10 @@ void BLDC::loop(uint16_t posNow){
   } else if (_modulo >= _czc[5] && _modulo <= _czc[6]){
     _comZone = 5;
   }
-
   /*
   Serial.print(" comZone: ");
   Serial.print(comZone);
   */
-  
   if(_dir == 1){
     _comCommand = _comZone + 2; // there is some falsity in this nomenclature: offset is not measured correctly atm
     if(_comCommand == 6){
@@ -115,7 +146,6 @@ void BLDC::loop(uint16_t posNow){
       _comCommand = 2;
     }
   }
-  
   if(_dir == 0){
     _comCommand = _comZone - 2;
     if(_comCommand == -1){
@@ -128,16 +158,12 @@ void BLDC::loop(uint16_t posNow){
       _comCommand = 3;
     }
   }
-
   /*
   Serial.print(" comCommand: ");
   Serial.print(comCommand);
-  
   Serial.println(" ");
   */
-  
   commutate(_comCommand);
-
 }
 
 void BLDC::commutate(uint8_t comPos){

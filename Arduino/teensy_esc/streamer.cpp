@@ -17,6 +17,10 @@ Streamer::Streamer(int hz){
   _isRunning = false;
 }
 
+void Streamer::init(){
+  _Stream_Timer.priority(129);
+}
+
 void Streamer::onStreamLoop(){
 
   dv1 = sin(sinSpot - 2/3 * PI);
@@ -29,7 +33,7 @@ void Streamer::onStreamLoop(){
   }
 
   Serial.print("#");
-  Serial.print(micros());
+  Serial.print(millis());
   Serial.print(" dv1:");
   Serial.print(dv1);
   Serial.print(" dv2:");
@@ -76,5 +80,11 @@ void Streamer::pickVarSet(int varSetId){
   //
 }
 
+void Streamer::add(int varId){
+  
+}
 
+void Streamer::remove(int varId){
+  
+}
 

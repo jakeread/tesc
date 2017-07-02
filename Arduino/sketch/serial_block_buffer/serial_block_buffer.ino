@@ -4,7 +4,6 @@
 #include "streamer.h"
 
 void setup() {
-
   Kernel* kernel = new Kernel();
   // put your setup code here, to run once:
   KERN->init();

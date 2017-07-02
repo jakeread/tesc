@@ -4,10 +4,14 @@
 #define TRUE                        1
 #define FALSE                       0
 
+// COM
+
+#define THE_BAUDRATE                115200
+
 // ENCODER SETUPS
 
 #define AS5047_RESOLUTION           16384 
-#define AS5047_SAMPLES              256    // keep lots of these around so that we can do filtering, derivatives
+#define AS5047_SAMPLES              256             // keep lots of these around so that we can do filtering, derivatives
 #define AS5047_AVERAGING            8
 
 #define RBUF_LENGTH 256
@@ -30,19 +34,25 @@
 
 // LOOP SPEEDS
 
-#define AS5047_LOOP_HZ              60000
-#define SVM_LOOP_HZ                 30000
-#define BLDC_LOOP_HZ                25000
-#define BLDC_REPORT_HZ              2
-#define DEBUG_LOOP_HZ               60
+#define MACHINE_LOOP_DEFAULT_HZ     15000
+#define MACHINE_LOOP_SECONDARY      25      // so we get 1000hz & 25000hz w/ one timer
+#define SAMPLE_DEFAULT_HZ           30000
 
 // SVM
 
 #define PHASE_ADVANCE               1.45 // RADIANS: optimum is 90*, or PI/2, or 1.57
 #define POS_TO_THETA                0.0042197349
 
+// BLDC
+
+#define IS_BLDC_MACHINE             1
+
 // DEBUG POT
 
 #define DEBUG_POT_PIN               A14
+
+// SP
+
+#define ARGWORDS                    4
 
 #endif

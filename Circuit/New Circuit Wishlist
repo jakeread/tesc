@@ -6,3 +6,10 @@ SPI RS232 drivers & chip select solution that works ... differential signals, al
 Port for 'hack' sol'ns i.e. PWM, analog potentiometer inputs
 Offset & 'nice' resistor networks for V_Sense, A_Sense (requires much DRV8302 datasheet reading)
 DRV8302
+
+
+New FDM Wishlish
+
+-> Better Dragchain on X Gantry
+-> Dragchain Option on Y Ganty
+-> Knock-free Glass Plate
