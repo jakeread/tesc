@@ -18,16 +18,20 @@ class BLDC{
   MotorLeg* MLC;
   
   void init();          // starts timers
+  
   bool duty(int duty);  // set rms pwm val
   int getDuty();
   bool dir(bool dir);   // set direction for commutation
   bool getDir();
-  void advance(int advance);    // set commutation freq (updates timer)
+  
   void clcommutate();
   void pot_input_update();
+  void commutate(uint8_t comPos);
+
   int getInputMode();
   bool setInputMode(int mode);
-  void commutate(uint8_t comPos);
+
+  bool killAllPower();
 
   void prntCzc();
 

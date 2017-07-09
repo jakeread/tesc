@@ -3,6 +3,7 @@
 
 #include "streamer.h"
 #include "bldc.h"
+#include "encoder_as5047.h"
 
 Shell::Shell() {
   // ?
@@ -12,7 +13,8 @@ const Shell::command_entry Shell::command_table[] = {
   {"test",         Shell::cmd_test},
   {"streamer",     Shell::cmd_streamer},         // for starting, stopping, setting stream vars
   {"timers",       Shell::cmd_timers},
-  {"tq",           Shell::cmd_tq},
+  {"tr",           Shell::cmd_tr},
+  {"encoder",      Shell::cmd_encoder},
 
   {NULL, NULL}
 };
@@ -81,118 +83,208 @@ void Shell::parseCommand(String message) {
   place = 0;
   while (command_table[place].cmd != NULL) {
     if ((String)command_table[place].cmd == _command) {
+      Serial.print("> ");
+      Serial.println(message);
       command_table[place].func(_argwords);
       _found = true;
+      break;
     }
     place++;
   }
   if (!_found) {
-    Serial.println("Shell: command not found");
+    shellError();
   }
 }
 
+// --------------------------------------------------------------------------- CMD_TEST
 void Shell::cmd_test(String args[ARGWORDS]) {
-  Serial.println("CMD_TEST: ");
-  //Serial.println(args);
+  Serial.println("Shell Test...");
 }
 
-/*
-   stream->hz 1200
-   stream->start
-   stream->stop
-*/
-
+// --------------------------------------------------------------------------- CMD_STREAMER
 void Shell::cmd_streamer(String args[ARGWORDS]) {
-  Serial.print("CMD_STREAM: ");
-  if (args[0] == "start") {
-    Serial.println("Starting stream...");
-    KERNEL->streamer->start();
-  } else if (args[0] == "stop") {
-    KERNEL->streamer->stop();
-    Serial.println("Stream stopped");
-  } else if (args[0] == "hz") {
+  Serial.println("Shell Streamer: ");
+  if (args[0] == "start") {                       // START
+    if (KERNEL->streamer->start()) {
+      Serial.println("Starting stream...");
+    } else {
+      Serial.println("Stream already started.");
+    }
+  } else if (args[0] == "stop") {                 // STOP
+    if (KERNEL->streamer->stop()) {
+      Serial.println("Stopping stream...");
+    } else {
+      Serial.println("Stream already stopped.");
+    }
+  } else if (args[0] == "hz") {                   // HZ
     int hzUpdate = args[1].toInt();
     if (hzUpdate) { // i.e. if not 0
-      Serial.print("Setting Stream HZ to ");
-      Serial.println(hzUpdate);
-      KERNEL->streamer->setHz(hzUpdate);
-    } else {
-      Serial.print("Stream HZ is: ");
-      Serial.println(KERNEL->streamer->getHz());
+      if (KERNEL->streamer->setHz(hzUpdate)) {
+        Serial.print("Streamer HZ set to: ");
+        Serial.println(hzUpdate);
+      } else {
+        Serial.print("Stream HZ is: ");
+        Serial.println(KERNEL->streamer->getHz());
+      }
     }
-  } else {
-    Serial.println("ERR: args in stream not valid");
+  } else if (args[0] == "setvars") {                  // SETVARS
+    if (args[1] == "test") {
+      KERNEL->streamer->setVarSet(VARSET_ID_TEST);
+      Serial.println("Streaming test variables...");
+    } else if (args[1] == "voltages") {
+      KERNEL->streamer->setVarSet(VARSET_ID_VOLTAGES);
+      Serial.println("Streaming voltages...");
+    } else if (args[1] == "currents") {
+      KERNEL->streamer->setVarSet(VARSET_ID_CURRENTS);
+      Serial.println("Streaming currents...");
+    } else {
+      Serial.print("Streamer current varset is: ");
+      Serial.println(KERNEL->streamer->getVarSet());
+    }
+  } else {                                            // DEFAULT
+    Serial.print("HZ is: ");
+    Serial.print(KERNEL->streamer->getHz());
+    Serial.print(" varset is: ");
+    Serial.println(KERNEL->streamer->getVarSet());
   }
 }
 
-/*
-   TODO: This implementation is pretty garb, missing a lot
-*/
+// --------------------------------------------------------------------------- CMD_TIMERS
 
 void Shell::cmd_timers(String args[ARGWORDS]) {
-  Serial.print("CMD_TIMERS: ");
-  if (args[0] == "machine") {
-    int hz = args[1].toInt();
-    if (hz) {
+  if (args[0] == "machine") {                         // MACHINE
+    if (args[1] == "hz") {                            // MACHINE && HZ
+      int hz = args[2].toInt();
+      if (hz) {
+        if (KERNEL->_Machine_T_isRunning) {
+          KERNEL->_Machine_Timer.end();
+          Serial.print("Restarting Machine Timer at HZ: ");
+          Serial.println(hz);
+          KERNEL->_Machine_T_hz = hz;
+          KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / hz);
+        } else {
+          Serial.print("Starting Machine Timer at HZ: ");
+          Serial.println(hz);
+          KERNEL->_Machine_T_hz = hz;
+          KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / hz);
+        }
+      }
+    } else if (args[1] == "stop") {                 // MACHINE && STOP
       if (KERNEL->_Machine_T_isRunning) {
         KERNEL->_Machine_Timer.end();
-        Serial.print("Restarting MACHINE Timer at HZ: ");
-        Serial.println(hz);
-        KERNEL->_Machine_T_hz = hz;
-        KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / hz);
+        KERNEL->bldc->killAllPower();
+        KERNEL->_Machine_T_isRunning = false;
+#if IS_FOC_MACHINE
+#warning NOT IMPLEMENTED
+#endif
+        Serial.println("RIP Machine Timer");
       } else {
-        Serial.println("MACHINE timer is not running... this command is incomplete...");
+        Serial.println("Machine Timer already stopped...");
       }
-      /*
-         ALSO:
-         report current hz
-         do 'default'
-      */
+    } else if (args[1] == "start") {                // MACHINE && START
+      if (KERNEL->_Machine_T_isRunning) {
+        Serial.println("Machine Timer already started...");
+      } else {
+        KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / KERNEL->_Machine_T_hz); // TODO: this should be KERNEL->startMachineTimer();
+        KERNEL->_Machine_T_isRunning = true;
+        Serial.print("Starting Machine Timer at HZ: ");
+        Serial.println(KERNEL->_Machine_T_hz);
+      }
+    } else {
+      Serial.print("Machine Timer HZ is: ");
+      Serial.print(KERNEL->_Machine_T_hz);
+      Serial.print(" and is running: ");
+      Serial.println(KERNEL->_Machine_T_isRunning);
     }
-  }
-  if (args[0] == "sample") {
-    int hz = args[1].toInt();
-    if (hz) {
+  } else if (args[0] == "sample") {                  // SAMPLE
+    if (args[1] == "hz") {                           // SAMPLE && HZ
+      int hz = args[2].toInt();
+      if (hz) {
+        if (KERNEL->_Sample_T_isRunning) {
+          KERNEL->_Sample_Timer.end();
+          Serial.print("Restarting Sample Timer at HZ: ");
+          Serial.println(hz);
+          KERNEL->_Sample_T_hz = hz;
+          KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / hz);
+        } else {
+          Serial.print("Starting Sample Timer at HZ: ");
+          Serial.println(hz);
+          KERNEL->_Sample_T_hz = hz;
+          KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / hz);
+        }
+      }
+    } else if (args[1] == "stop") {                 // SAMPLE && STOP
       if (KERNEL->_Sample_T_isRunning) {
         KERNEL->_Sample_Timer.end();
-        Serial.print("Restarting SAMPLE Timer at HZ: ");
-        Serial.println(hz);
-        KERNEL->_Sample_T_hz = hz;
-        KERNEL->_Sample_Timer.begin(Kernel::onSample, 1000000 / hz);
+        KERNEL->_Sample_T_isRunning = false;
+        Serial.println("RIP Sample Timer");
       } else {
-        Serial.println("SAMPLE timer is not running ... this command is incomplete...");
+        Serial.println("Sample Timer already stopped...");
       }
+    } else if (args[1] == "start") {                // SAMPLE && START
+      if (KERNEL->_Sample_T_isRunning) {
+        Serial.println("Sample Timer already started...");
+      } else {
+        KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / KERNEL->_Sample_T_hz); // TODO: this should be KERNEL->startMachineTimer();
+        KERNEL->_Sample_T_isRunning = true;
+        Serial.print("Starting Sample Timer at HZ: ");
+        Serial.println(KERNEL->_Sample_T_hz);
+      }
+    } else {
+      Serial.print("Sample Timer HZ is: ");
+      Serial.print(KERNEL->_Sample_T_hz);
+      Serial.print(" and is running: ");
+      Serial.println(KERNEL->_Sample_T_isRunning);
     }
+  } else {
+    Serial.print("Machine Timer Status: ");
+    Serial.print(KERNEL->_Machine_T_isRunning);
+    Serial.print(", HZ: ");
+    Serial.println(KERNEL->_Machine_T_hz);
+    Serial.print("Sample Timer Status: ");
+    Serial.print(KERNEL->_Sample_T_isRunning);
+    Serial.print(", HZ: ");
+    Serial.println(KERNEL->_Sample_T_hz);
   }
 }
 
-void Shell::cmd_tq(String args[ARGWORDS]) {
+// --------------------------------------------------------------------------- CMD_TR
 
-  if (isAlpha(args[0].charAt(0))) {
-    if (args[0] == "mode") {
-      if (args[1] == "pot") {
-        KERNEL->bldc->setInputMode(BLDC_INPUTMODE_POT);
-        Serial.println("Set BLDC Input Mode to POT");
-      } else if (args[1] == "shell") {
-        KERNEL->bldc->setInputMode(BLDC_INPUTMODE_SHELL);
-        Serial.println("Set BLDC Input Mode to Shell");
+void Shell::cmd_tr(String args[ARGWORDS]) {
+  if (isAlpha(args[0].charAt(0))){                               // NON-NUMERIC CMDS
+    if (args[0] == "mode") {                                      // MODE
+      if (args[1] == "pot") {                                     // MODE->POT
+        if (KERNEL->bldc->setInputMode(BLDC_INPUTMODE_POT)) {
+          KERNEL->bldc->duty(0);
+          Serial.println("Set BLDC Input Mode to POT");
+        } else {
+          Serial.println("BLDC setInputMode Error");
+        }
+      } else if (args[1] == "shell") {                          // MODE->SHELL
+        if (KERNEL->bldc->setInputMode(BLDC_INPUTMODE_SHELL)) {
+          KERNEL->bldc->duty(0);
+          Serial.println("Set BLDC Input Mode to Shell");
+        } else {
+          Serial.println("BLDC setInputMode Error");
+        }
       } else {
-        Serial.println("invalid mode argument");
+        Serial.print("BLDC Mode is: ");
+        Serial.println(KERNEL->bldc->getInputMode());
       }
     }
-  } else {
+  } else {                                                      // NUMERIC
     int duty = args[0].toInt();
     int dir = args[1].toInt();
-    if (duty == 0 && dir == 0) {
-      // if neither of words exist in the command
-      Serial.print("TQ: Duty: ");
+    if (duty == 0 && dir == 0) {                                // DEFAULT-REPORT
+      // if neither of words exist in the command, report values
+      Serial.print("TR: Duty: ");
       Serial.print(KERNEL->bldc->getDuty());
       Serial.print(" Dir: ");
       Serial.print(KERNEL->bldc->getDir());
       Serial.print(" Input: ");
       Serial.println(KERNEL->bldc->getInputMode());
     } else {
-      if(KERNEL->bldc->duty(duty)){
+      if (KERNEL->bldc->duty(duty)) {
         KERNEL->bldc->dir(dir);
         Serial.print("Set BLDC Duty: ");
         Serial.print(duty);
@@ -203,12 +295,65 @@ void Shell::cmd_tq(String args[ARGWORDS]) {
       }
     }
   }
-
-
   // OK, now an operating Q
   // in this command, we should be able to say 'tq pot' or 'tq analog' or something... to switch input mode as well
   // how do we implement that on BLDC side? if *is_updating* or something? it would also be nice to get rid of the awk. once-in-a-while check at the moment
   // which is also potentially causing the knock
+}
+
+// --------------------------------------------------------------------------- CMD_ENCODER
+
+void Shell::cmd_encoder(String args[ARGWORDS]){
+  if(args[0] == "offset"){                                    // OFFSET
+    if(args[1] == "set"){                                     // OFFSET -> SET
+      if(args[2].toInt()){
+        if(KERNEL->as5047->setEncoderOffset(args[2].toInt())){
+          Serial.print("Updated Encoder Offset to: ");
+          Serial.println(KERNEL->as5047->getEncoderOffset());
+        } else {
+          Serial.println("Error on setting encoder offset");
+        }
+      } else {
+        Serial.println("Error with encoder set value provided...");
+      }
+    } else if (args[1] == "find"){                            // OFFSET -> FIND
+      Serial.println("ENCODER OFFSET SEARCH ROUTINE");
+    } else {
+      Serial.print("Encoder Offset is: ");
+      Serial.println(KERNEL->as5047->getEncoderOffset());
+    }
+  } else if (args[0] == "reverse"){                           // REVERSE
+    if(args[1] == "true"){            // REVERSE -> TRUE
+      if(KERNEL->as5047->setEncoderReverse(true)){
+        Serial.println("Encoder Reverse set to True");
+      } else {
+        Serial.println("Error on setting encoder reverse");
+      }
+    } else if(args[1] == "false"){
+      if(KERNEL->as5047->setEncoderReverse(false)){           // REVERSE -> FALSE
+        Serial.println("Encoder Reverse set to False");
+      } else {
+        Serial.println("Error on setting encoder reverse");
+      }
+    } else if (args[1] == "find"){                            // REVERSE -> FIND
+       Serial.println("testing for encoder reverse...");
+       bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
+       Serial.print("Result: ");
+       Serial.println(result);
+    } else {
+      Serial.print("Encoder Reverse is: ");                   // REVERSE -> DEFAULT REPORT
+      Serial.println(KERNEL->as5047->getEncoderReverse());
+    }
+  } else {
+    Serial.print("Encoder, Offset: ");
+    Serial.print(KERNEL->as5047->getEncoderOffset());
+    Serial.print(" Reverse: ");
+    Serial.println(KERNEL->as5047->getEncoderReverse());
+  }
+}
+
+void Shell::shellError() {
+  Serial.println("unrecognized argument or command");
 }
 
 /*

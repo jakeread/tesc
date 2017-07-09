@@ -7,6 +7,7 @@ Port for 'hack' sol'ns i.e. PWM, analog potentiometer inputs
 Offset & 'nice' resistor networks for V_Sense, A_Sense (requires much DRV8302 datasheet reading)
 DRV8302
 
+CAN Bus on Teensy is native -> probably leave these pins open, why not? Do hz research
 
 New FDM Wishlish
 

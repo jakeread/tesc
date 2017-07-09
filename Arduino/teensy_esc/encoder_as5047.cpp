@@ -17,10 +17,11 @@ void AS5047::init(){
   readWords[0] = readWord;
   readWords[1] = noOpWord;
 
-  readingPosition = 0;
+  _avgSumFloat = 0;
+  _avgSumInt = 0;
 
-  avgSumFloat = 0;
-  avgSumInt = 0;
+  _encoderOffset = AS5047_OFFSET;
+  _encoderReverse = AS5047_REV;
   
 }
 
@@ -55,11 +56,11 @@ void AS5047::readNow(){
   Serial.println(_errBit);
   */
   
-  #if AS5047_REV
+  if(_encoderReverse){
     Readings.push(AS5047_RESOLUTION - _reading);
-  #else
+  } else {
     Readings.push(_reading);
-  #endif
+  }
 }
 
 uint16_t AS5047::mostRecent(){
@@ -67,39 +68,62 @@ uint16_t AS5047::mostRecent(){
 }
 
 float AS5047::filtered(){
-  avgSumFloat = 0;
+  _avgSumFloat = 0;
   
   noInterrupts();
   for(int i = 0; i < AS5047_AVERAGING; i++){
-    avgSumFloat += Readings.get(-i);
+    _avgSumFloat += Readings.get(-i);
   }
   interrupts();
   
-  _filtered = avgSumFloat / AS5047_AVERAGING;
+  _filtered = _avgSumFloat / AS5047_AVERAGING;
 
-  _offset = _filtered + AS5047_AVERAGING;
+  _offset = _filtered + _encoderOffset;
   if(_offset > AS5047_RESOLUTION){
     _offsetInt -= MOTOR_MODULO;
   }
-  return _filtered;
+  return _offset;
 }
 
 uint32_t AS5047::filteredInt(){
-  avgSumInt = 0;
+  _avgSumInt = 0;
   
   noInterrupts();
   for(int i = 0; i < AS5047_AVERAGING; i++){
-    avgSumInt += Readings.get(-i);
+    _avgSumInt += Readings.get(-i);
   }
   interrupts();
 
-  _filteredInt = avgSumInt / AS5047_AVERAGING;
+  _filteredInt = _avgSumInt / AS5047_AVERAGING;
   
-  _offsetInt = _filteredInt + AS5047_OFFSET_UP;
+  _offsetInt = _filteredInt + _encoderOffset;
+  
   if(_offsetInt > AS5047_RESOLUTION){
     _offsetInt -= MOTOR_MODULO;
   }
   
   return _offsetInt;
+}
+
+bool AS5047::setEncoderOffset(uint16_t newOffset){
+  if(newOffset <= MOTOR_MODULO && newOffset >= 0){
+    _encoderOffset = newOffset;
+    return true;
+  } else {
+    return false;
+  }
+}
+
+uint16_t AS5047::getEncoderOffset(){
+  return _encoderOffset;
+}
+
+bool AS5047::setEncoderReverse(bool trueFalse){
+  _encoderReverse = trueFalse;
+  return true;
+}
+
+bool AS5047::getEncoderReverse(){
+  return _encoderReverse;
 }
 

@@ -20,9 +20,10 @@ class RingBuffer {
 
   void push(uint16_t item);
   uint16_t get(uint8_t relativePos);
+  uint16_t latest();
 
   private:
-  uint16_t _list[RBUF_LENGTH];
+  uint16_t _list[RBUF_LENGTH]; // TODO: Volatile? !
   uint8_t _listPosition;
   uint8_t _listEval;
   

@@ -29,6 +29,13 @@ void BLDC::init(){
   _inputMode = BLDC_INPUTMODE_POT;
 }
 
+bool BLDC::killAllPower(){
+  MLA->kill();
+  MLB->kill();
+  MLC->kill();
+  return true;
+}
+
 void BLDC::prntCzc(){
   for(int i = 0; i < 7; i ++){
     Serial.print("_czc");
@@ -62,10 +69,6 @@ bool BLDC::getDir(){
   return _dir;
 }
 
-void BLDC::advance(int advance){
-  _advance = advance;
-}
-
 int BLDC::getInputMode(){
   return _inputMode;
 }
@@ -73,8 +76,9 @@ int BLDC::getInputMode(){
 bool BLDC::setInputMode(int mode){
   if(mode == BLDC_INPUTMODE_POT || mode == BLDC_INPUTMODE_SHELL){
     _inputMode = mode;
+    return true;
   } else {
-    Serial.println("bldc->setInputMode error");
+    return false;
   }
 }
 

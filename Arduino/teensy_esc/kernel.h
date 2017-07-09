@@ -17,6 +17,7 @@
 class BLDC;
 class SVM;
 class AS5047;
+class Sampler;
 
 class SP;
 class Shell;
@@ -34,19 +35,27 @@ class Kernel{
   void onMainLoop();
   void flashLed();
 
-  static void onSample();
+  static void onSampleLoop(); // timer f'ns; also only 1 pls
   static void onMachineLoop();
+
+  bool findEncoderReverse(int duty);
+  uint16_t findEncoderOffset(int duty);
 
   /*
    * timers
    */
 
-  IntervalTimer _Sample_Timer;
+  IntervalTimer _Sample_Timer; // TODO: do these need to be pointered-to ? rather than 'direct' ? isn't this only a semantic difference anyways?
   int _Sample_T_hz;
   bool _Sample_T_isRunning;
   IntervalTimer _Machine_Timer;
   int _Machine_T_hz;
   bool _Machine_T_isRunning;
+
+  void stopSampleTimer();
+  void stopMachineTimer();
+  void startSampleTimer();
+  void startMachineTimer();
 
   /*
    * pointers to modules
@@ -58,6 +67,7 @@ class Kernel{
   SP* sp;
   Shell* shell;
   Streamer* streamer;
+  Sampler* sampler;
 
   static int _loopCount;
   

@@ -5,7 +5,10 @@
 #ifndef STREAMER_H
 #define STREAMER_H
 
-#define STREAMER_DEFAULT_HZ 60
+#define STREAMER_DEFAULT_HZ   60
+#define VARSET_ID_TEST        0
+#define VARSET_ID_VOLTAGES    1
+#define VARSET_ID_CURRENTS    2
 
 #include <Arduino.h>
 
@@ -15,11 +18,13 @@ class Streamer{
 
   void init();
 
-  void start();
-  void stop();
-  void setHz(int hz);
+  bool start();
+  bool stop();
+  bool restart();
+  bool setHz(int hz);
   int getHz();
-  void pickVarSet(int setId);
+  bool setVarSet(int setId);
+  int getVarSet();
   void add(int varId);
   void remove(int varId);
 
@@ -30,12 +35,16 @@ class Streamer{
   static double dv3;
 
   IntervalTimer _Stream_Timer;
-  static void onStreamLoop();
+  static void streamVarsTest();
+  static void streamVarsVoltages();
+  static void streamVarsCurrents();
 
   private:
   
   int _hz;
   bool _isRunning;
+  int _varSet;
+  void (*_varFn)(void);
   
 };
 

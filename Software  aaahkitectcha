@@ -6,14 +6,23 @@ Timers
 
 Kernel->
 	BLDC->MotorLegs								(operates motor while in BLDC mode)
+		Does no coms, is switched by other softwares.
+		On loops, timer calls these f'ns
+		Internal f'ns block fuck ups (like outsidebounds errors, etc)
 	FOC->SVM->MotorLegs 						(operates motor in FOC mode)
 	Sampler	->AS5047	->ringBuffers 			(home of all measurements)
 						->t3spi
 			->ADC'S 	->ringBuffers
-			->i2c's etc would live here
+		Does no coms, is read-from other softwares
+		On loops, timer calls these f'ns
 	SPB											(Serial Block and Parse || chit-chat)
+		Handles incoming serial chars
+		? Has secondary outgoing buffer for really big message ques ... i.e. from ringBufferDumps
 	Shell										(acts like terminal, write commands here)
+		No buffering, command-specific 'scripts' ... i.e. bldc calcoffset
+		shell commands tend to be module-associated, should have 'help' f'ns
 	Streamer									(fires data -> roboscpd for analysis)
+
 
 	*not implemented*
 	Planner	->Kinematics						(fun fun fun maths :| want 2 be here)
@@ -23,21 +32,88 @@ Config.h
 	global vars / constants
 
 
+Shell Commands:
+	test
+		-> says hello
+
+	streamer
+		-> stream status
+	streamer 	start
+					-> starts
+				stop
+					-> stops
+				hz <int>
+					-> <noarg> reports hz
+					-> sets stream timer hz
+				setvars <varset name>
+					-> <noarg> reports current varset
+					-> sets varset to stream
+
+	timers 
+		-> timers status
+	timers 		machine 
+					-> machine timers status
+				machine 	hz <int>
+								-> <noarg> current hz
+								-> sets machine timer hz, restarts if running
+				machine 	stop
+								-> halts machine timer, ! KILL ALL POWER SWITCHES 1ST
+				machine 	start
+								-> if !started, starts
+				sample
+					-> sample timers status
+				sample 		hz <int>
+								-> <noarg> current hz
+								-> sets sample timer hz
+				sample 		stop
+								-> halts sampling timer, ! KILL MACHINE TIMER ALSO, associated power kills
+							start
+								-> starts if stopped
+
+	tr
+		-> current mode, tq, dir
+	tr <int> <int>
+		-> duty, dir
+		-> confirms
+	tr 			mode
+					-> gets mode
+				mode <mode-id>
+					-> sets mode
+
+
+
 TBD's immediate
 
-	Implement a torque command!
-		torque 
-		torque duty 255 dir 0
-		torque duty 113
-		torque dir 1
+	Do config.h mode & startup differences...
+
+	Do reverse -> modulo -> moduloOffset search routine...
+
+	Do bldc 	offset
+					-> current offset is
+				offset 		set <int>
+								-> sets offset val in bldc
+							find
+								-> does offset-search routine, tells u estimate
+									this will require us to come-back to a f'n ... ?
+									unless we do it with slop
+				reverse 
+					-> current reverse value
+				reverse 	set <true / false>
+								-> sets reverse
+							find
+								-> does reverse-find routine
+				active
+					-> y/n
+
+	Sampler && ADC's Sketch
 
 	-> roboscpd
 
-	Do a stream  !
+	-> function test-speed of ADC && build sample-set-and-dump command :/
+
 	Do a capture !
-		-> Capture Data at fast-as-possible rate for a given sample-time
-		-> dish it all on the serial line, in chunk.
-		-> 0.01 -> 2s intervals ... or define max by defining data sizes
+		-> or just do *copy current ring buffers* and dump to serial line
+		-> memcpy
 
 	Do proper-foc by watching these waveforms ~
 	Optimize for speed, identify and eliminate 'knocking' in BLDC?

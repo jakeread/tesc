@@ -14,10 +14,6 @@ void setup() {
   KERNEL->init();
 }
 
-// Timer Calls
-
-
-
 // --------------------------------------------------------- BLDC DEBUG LOOP
 #if RUN_BLDC_DEBUG_LOOP
 
@@ -86,11 +82,11 @@ void Debug_Loop() {
 
 
 void loop() { 
-  KERNEL->onMainLoop(); 
 /*
  * most importantly, checks the Serial Buffer. 
  * this will run as often as possible ..
  * whenever other timers' functions and follow-throughs are finished
  */ 
+  KERNEL->onMainLoop(); 
 }
 
