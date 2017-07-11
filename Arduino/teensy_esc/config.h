@@ -21,29 +21,29 @@
 #define PIN_HI_C                    4
 #define PIN_LO_C                    3
 
-#define PIN_SENSV_A                 17
-#define PIN_SENSV_B                 18
-#define PIN_SENSV_C                 19
+#define PIN_SENSV_A                 A3
+#define PIN_SENSV_B                 A4
+#define PIN_SENSV_C                 A5
 
-#define PIN_SENSA_A                 21
-#define PIN_SENSA_B                 22
-#define PIN_SENSA_C                 23
+#define PIN_SENSA_A                 A7
+#define PIN_SENSA_B                 A8
+#define PIN_SENSA_C                 A9
 
 // ENCODER SETUPS
 
 #define AS5047_RESOLUTION           16384 
 #define AS5047_SAMPLES              256             // keep lots of these around so that we can do filtering, derivatives
-#define AS5047_AVERAGING            8
+#define AS5047_AVERAGING            4
 
 #define RBUF_LENGTH 256
 
-#define AS5047_OFFSET               1931           //1395
+#define AS5047_OFFSET               1766           // but ~ 1700 seems better -> this is roughly one 'com zone' away
 #define AS5047_REV                  FALSE          // set TRUE to reverse values, 0 to retain original // MT4108 = TRUE // MT5208 = FALSE
 
 #define ENCODER_REVSEARCH_NUM       5
 #define ENCODER_REVSEARCH_MULTIPLE  25 // _NUM * 6 ... TODO: evaluations in #defines?
 #define ENCODER_REVSEARCH_LESS      24
-#define ENCODER_SEARCH_DEFAULT_DUTY 190
+#define ENCODER_SEARCH_DEFAULT_DUTY 210
 
 // MOTOR SPECIFIC
 
@@ -59,9 +59,9 @@
 
 // LOOP SPEEDS
 
-#define MACHINE_LOOP_DEFAULT_HZ     15000
+#define MACHINE_LOOP_DEFAULT_HZ     20000
 #define MACHINE_LOOP_SECONDARY      500      // so we get 1000hz & 25000hz w/ one timer
-#define SAMPLE_DEFAULT_HZ           6000
+#define SAMPLE_DEFAULT_HZ           10000
 
 // SVM
 

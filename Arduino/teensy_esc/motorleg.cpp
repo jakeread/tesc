@@ -32,7 +32,7 @@ void MotorLeg::set(uint8_t duty, int dir){  // duty 0 - 255 : value checks happe
   }
 }
 
-void MotorLeg::setSVM(double dutyDir){ // -255 -> 255 (val & direction)
+void MotorLeg::setFloat(float dutyDir){ // -255 -> 255 (val & direction)
   if(dutyDir > 0){
     _dir = 1;
     _duty = map(dutyDir, 0, 255, LEG_MINPWM, 255);

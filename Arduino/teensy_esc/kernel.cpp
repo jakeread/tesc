@@ -142,7 +142,7 @@ bool Kernel::findEncoderReverse(int duty) {
     encoderResults[i][0] = com;
     Serial.print("commutate: ");
     Serial.print(com);
-    delay(500);                              // spring restitution
+    delay(1000);                              // spring restitution
     Serial.print("|\t");
     for (int s = 0; s < AS5047_AVERAGING; s++) {
       this->as5047->readNow();
@@ -254,6 +254,8 @@ bool Kernel::findEncoderReverse(int duty) {
   offsetGuess /= offsetAverages;
   Serial.print("\t offsetGuess:\t\t");
   Serial.println(offsetGuess);
+  Serial.print("less 1/12 modulo -> centers zones: ");
+  Serial.println(offsetGuess - moduloPick / 12);
 
   // if reverse flip necessary, set reverse, run again
   
@@ -262,6 +264,7 @@ bool Kernel::findEncoderReverse(int duty) {
 
 uint16_t Kernel::findEncoderOffset(int duty) {
   //
+  return 0;
 }
 
 void Kernel::flashLed() {

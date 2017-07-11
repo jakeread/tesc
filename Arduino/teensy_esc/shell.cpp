@@ -251,7 +251,7 @@ void Shell::cmd_timers(String args[ARGWORDS]) {
 // --------------------------------------------------------------------------- CMD_TR
 
 void Shell::cmd_tr(String args[ARGWORDS]) {
-  if (isAlpha(args[0].charAt(0))){                               // NON-NUMERIC CMDS
+  if (isAlpha(args[0].charAt(0))) {                              // NON-NUMERIC CMDS
     if (args[0] == "mode") {                                      // MODE
       if (args[1] == "pot") {                                     // MODE->POT
         if (KERNEL->bldc->setInputMode(BLDC_INPUTMODE_POT)) {
@@ -303,11 +303,11 @@ void Shell::cmd_tr(String args[ARGWORDS]) {
 
 // --------------------------------------------------------------------------- CMD_ENCODER
 
-void Shell::cmd_encoder(String args[ARGWORDS]){
-  if(args[0] == "offset"){                                    // OFFSET
-    if(args[1] == "set"){                                     // OFFSET -> SET
-      if(args[2].toInt()){
-        if(KERNEL->as5047->setEncoderOffset(args[2].toInt())){
+void Shell::cmd_encoder(String args[ARGWORDS]) {
+  if (args[0] == "offset") {                                  // OFFSET
+    if (args[1] == "set") {                                   // OFFSET -> SET
+      if (args[2].toInt()) {
+        if (KERNEL->as5047->setEncoderOffset(args[2].toInt())) {
           Serial.print("Updated Encoder Offset to: ");
           Serial.println(KERNEL->as5047->getEncoderOffset());
         } else {
@@ -316,34 +316,41 @@ void Shell::cmd_encoder(String args[ARGWORDS]){
       } else {
         Serial.println("Error with encoder set value provided...");
       }
-    } else if (args[1] == "find"){                            // OFFSET -> FIND
+    } else if (args[1] == "find") {                           // OFFSET -> FIND
       Serial.println("ENCODER OFFSET SEARCH ROUTINE");
     } else {
       Serial.print("Encoder Offset is: ");
       Serial.println(KERNEL->as5047->getEncoderOffset());
     }
-  } else if (args[0] == "reverse"){                           // REVERSE
-    if(args[1] == "true"){            // REVERSE -> TRUE
-      if(KERNEL->as5047->setEncoderReverse(true)){
+  } else if (args[0] == "reverse") {                          // REVERSE
+    if (args[1] == "true") {          // REVERSE -> TRUE
+      if (KERNEL->as5047->setEncoderReverse(true)) {
         Serial.println("Encoder Reverse set to True");
       } else {
         Serial.println("Error on setting encoder reverse");
       }
-    } else if(args[1] == "false"){
-      if(KERNEL->as5047->setEncoderReverse(false)){           // REVERSE -> FALSE
+    } else if (args[1] == "false") {
+      if (KERNEL->as5047->setEncoderReverse(false)) {         // REVERSE -> FALSE
         Serial.println("Encoder Reverse set to False");
       } else {
         Serial.println("Error on setting encoder reverse");
       }
-    } else if (args[1] == "find"){                            // REVERSE -> FIND
-       Serial.println("testing for encoder reverse...");
-       bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
-       Serial.print("Result: ");
-       Serial.println(result);
+    } else if (args[1] == "find") {                           // REVERSE -> FIND
+      Serial.println("testing for encoder reverse...");
+      bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
+      Serial.print("Result: ");
+      Serial.println(result);
     } else {
       Serial.print("Encoder Reverse is: ");                   // REVERSE -> DEFAULT REPORT
       Serial.println(KERNEL->as5047->getEncoderReverse());
     }
+  } else if (args[0] == "search") {
+    Serial.println("testing for encoder settings...");
+    bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
+    Serial.print("Result: ");
+    Serial.println(result);
+  } else if (args[0] == "print" && args[1] == "comzones") {
+    KERNEL->bldc->prntCzc();
   } else {
     Serial.print("Encoder, Offset: ");
     Serial.print(KERNEL->as5047->getEncoderOffset());

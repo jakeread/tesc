@@ -74,9 +74,9 @@ void SVM::assert(){
   _setValB = _duty*cos(_theta - (TWO_PI)/3);
   _setValC = _duty*cos(_theta + (TWO_PI)/3);
 
-  MLA->setSVM(_setValA);
-  MLB->setSVM(_setValB);
-  MLC->setSVM(_setValC);
+  MLA->setFloat(_setValA);
+  MLB->setFloat(_setValB);
+  MLC->setFloat(_setValC);
 }
 
 double SVM::getSetVal(int index){

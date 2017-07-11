@@ -84,10 +84,6 @@ Shell Commands:
 
 TBD's immediate
 
-	Do config.h mode & startup differences...
-
-	Do reverse -> modulo -> moduloOffset search routine...
-
 	Do bldc 	offset
 					-> current offset is
 				offset 		set <int>
@@ -105,7 +101,9 @@ TBD's immediate
 				active
 					-> y/n
 
-	Sampler && ADC's Sketch
+	Sampler && ADC's Sketch ->
+
+	Can you PID position w/ BLDC ?
 
 	-> roboscpd
 
