@@ -3,7 +3,7 @@
 #define PERIPHERAL_BUS_CLOCK 48000000   // Bus Clock 48MHz
 #define FTM0_CLK_PRESCALE 0             // FTM0 Prescaler
 #define FTM0_OVERFLOW_FREQUENCY 40000   // PWM frequency in Hz
-#define FTM0_DEADTIME_DTVAL 0           // DeadTimeHigh, zum Schutz der MOSFETs
+#define FTM0_DEADTIME_DTVAL 7           // DeadTime, in uS
 
 #define BAUDRATE 115200   // Festsetzen der Datenrate für die Arduino Debug Schnittstelle und oder Bluetooth Modul
 
@@ -44,8 +44,6 @@ void setup () {
   PWMInit(PERIPHERAL_BUS_CLOCK, FTM0_CLK_PRESCALE, FTM0_OVERFLOW_FREQUENCY, FTM0_DEADTIME_DTVAL);
 
   timer_Sin.begin(TimerSin, 130); //   Timer
-
-
 }
 
 void loop ()
