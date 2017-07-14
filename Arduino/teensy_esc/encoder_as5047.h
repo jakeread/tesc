@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include "t3spi.h"
-#include "ringBuffer.h"
+#include "ringbuffer.h"
 #include "config.h"
 
 class AS5047 {

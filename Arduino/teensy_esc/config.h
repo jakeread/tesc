@@ -35,7 +35,7 @@
 #define AS5047_SAMPLES              256             // keep lots of these around so that we can do filtering, derivatives
 #define AS5047_AVERAGING            4
 
-#define RBUF_LENGTH 256
+#define RBUF_LENGTH                 256
 
 #define AS5047_OFFSET               1766           // but ~ 1700 seems better -> this is roughly one 'com zone' away
 #define AS5047_REV                  FALSE          // set TRUE to reverse values, 0 to retain original // MT4108 = TRUE // MT5208 = FALSE

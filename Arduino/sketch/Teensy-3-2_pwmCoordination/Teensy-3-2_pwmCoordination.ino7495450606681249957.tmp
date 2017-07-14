@@ -19,11 +19,6 @@ byte v = 180 - 60; // Phase V -> 120 Grad später
 byte w = 180 - 120; // Phase W -> 240 Grad später
 byte Ramp = 1; // Spannungsabsenkung bei kleinen Drehzahlen
 
-const uint8_t tickPin = 14;
-const uint8_t ledPin = 13;
-const bool on = HIGH;
-const bool off = LOW;
-
 
 IntervalTimer timer_Sin;    // 1 Sekunden Timer
 
@@ -31,8 +26,8 @@ void setup () {
 
   Serial.begin(115200);
 
-  pinMode(tickPin, OUTPUT);
-  pinMode(ledPin, OUTPUT);
+  pinMode(13, OUTPUT);
+  pinMode(14, OUTPUT);
 
   thePWM = new T3PWM();
   theADC = new T3ADC(PIN_SENSA_A, PIN_SENSA_B, PIN_SENSA_C, PIN_SENSV_A, PIN_SENSV_B, PIN_SENSV_C);
@@ -42,21 +37,12 @@ void setup () {
   thePWM->init();
   theADC->init();
 
-  timer_Sin.begin(TimerSin, 1000); //   Timer
+  timer_Sin.begin(TimerSin, 130); //   Timer
 }
 
 void loop ()
 {
-  delay(50);
-  uint16_t theLatestA;
-  uint16_t theLatestB;
-  noInterrupts();
-  theLatestA = theADC->RB_SENSA_A.latest();
-  theLatestB = theADC->RB_SENSA_B.latest();
-  interrupts();
-  Serial.print(theLatestA);
-  Serial.print("\t");
-  Serial.println(theLatestB);
+  delay(1);
 }
 
 void TimerSin()
@@ -74,16 +60,20 @@ void TimerSin()
   //digitalWrite(Trigger_01, led);
 }
 
+const uint8_t tickPin = 14;
+const bool on = HIGH;
+const bool off = LOW;
+/*
 void adc0_isr(void){
-  digitalWriteFast(ledPin, on);
   if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    theADC->RB_SENSA_A.push((uint16_t)ADC0_RA); // adc result data register
+    result0RA = (unsigned short)ADC0_RA; // adc result data register
+      led = ~led;
+      digitalWrite(tickPin, led);
   }
-  digitalWriteFast(ledPin, off);
+  led = ~led;
+  digitalWrite(tickPin, led);
 }
-
-unsigned short result;
-
+*/
 void adc1_isr(void){ // not an object f'n bc triggered in some depths of teensy core that I don't understand
   digitalWriteFast(tickPin, on);
   if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag

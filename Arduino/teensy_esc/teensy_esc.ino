@@ -14,6 +14,17 @@ void setup() {
   KERNEL->init();
 }
 
+void loop() { 
+/*
+ * most importantly, checks the Serial Buffer. 
+ * this will run as often as possible ..
+ * whenever other timers' functions and follow-throughs are finished
+ */ 
+  KERNEL->onMainLoop(); 
+  // TODO: on teensy, large amounts of data become available very fast -> to re-write serial such that other interrupts don't get blocked when, say, 256 bytes show up at once!
+}
+
+
 // --------------------------------------------------------- BLDC DEBUG LOOP
 #if RUN_BLDC_DEBUG_LOOP
 
@@ -80,14 +91,4 @@ void Debug_Loop() {
 }
 #endif
 
-
-void loop() { 
-/*
- * most importantly, checks the Serial Buffer. 
- * this will run as often as possible ..
- * whenever other timers' functions and follow-throughs are finished
- */ 
-  KERNEL->onMainLoop(); 
-  // TODO: on teensy, large amounts of data become available very fast -> to re-write serial such that other interrupts don't get blocked when, say, 256 bytes show up at once!
-}
 

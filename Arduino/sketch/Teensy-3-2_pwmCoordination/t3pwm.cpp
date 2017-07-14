@@ -1,7 +1,37 @@
+#include "t3pwm.h"
+#include "config.h"
 #include <mk20dx128.h>
 
-void PWMInit(uint32_t PERIPHERAL_BUS_CLOCK, uint8_t FTM0_CLK_PRESCALE, uint32_t FTM0_OVERFLOW_FREQUENCY, uint8_t FTM0_DEADTIME_DTVAL)
-{
+/* from PRJC's cores / teensy3 / pins_teensy.c -> FTM0 channels are stuck to these pins.
+  #elif defined(__MK20DX256__)
+  #define FTM0_CH0_PIN 22
+  #define FTM0_CH1_PIN 23
+  #define FTM0_CH2_PIN  9
+  #define FTM0_CH3_PIN 10
+  #define FTM0_CH4_PIN  6
+  #define FTM0_CH5_PIN 20
+  #define FTM0_CH6_PIN 21
+  #define FTM0_CH7_PIN  5
+  #define FTM1_CH0_PIN  3
+  #define FTM1_CH1_PIN  4
+  #define FTM2_CH0_PIN 32
+  #define FTM2_CH1_PIN 25
+*/
+
+uint32_t PERIPHERAL_BUS_CLOCK = 48000000;
+uint8_t FTM0_CLK_PRESCALE = 0;  // FTM0 Prescaler
+uint32_t FTM0_OVERFLOW_FREQUENCY = 11718; // PWM frequency in Hz
+uint8_t FTM0_DEADTIME_DTVAL = 2; // DeadTime, in clk cycles (unconfirmed)
+
+// don't need dis?
+const uint16_t MAX_DUTY_CYCLE = PERIPHERAL_BUS_CLOCK / FTM0_OVERFLOW_FREQUENCY;   // Maximum duty cycle value.
+const uint16_t MIN_DUTY_CYCLE = 0;      // Minimum duty cycle value.
+
+T3PWM::T3PWM() {
+  // save it for init
+}
+
+void T3PWM::init() {
   //Enable the Clock to the FTM0 Module
   SIM_SCGC6 |= SIM_SCGC6_FTM0;
 
@@ -69,8 +99,6 @@ void PWMInit(uint32_t PERIPHERAL_BUS_CLOCK, uint8_t FTM0_CLK_PRESCALE, uint32_t 
   FTM0_C5SC &= ~FTM_CSC_ELSA; //Edge or level Select
   FTM0_C5SC |= FTM_CSC_MSB; //Channel Mode select
 
-  // FTM0_POL = FTM_POL_POL0 | FTM_POL_POL1 | FTM_POL_POL2 | FTM_POL_POL3 | FTM_POL_POL4 | FTM_POL_POL5; // flipping all channel pols, so that deadtime is inserted on high-side
-
   //Edit registers when no clock is fed to timer so the MOD value, gets pushed in immediately
   FTM0_SC = 0; //Make sure its Off!
 
@@ -91,124 +119,29 @@ void PWMInit(uint32_t PERIPHERAL_BUS_CLOCK, uint8_t FTM0_CLK_PRESCALE, uint32_t 
 
   //Status and Control bits
   FTM0_SC = FTM_SC_CLKS(1); // Selects Clock source to be "system clock"
-  //sets pre-scale value see details below
-  FTM0_SC |= FTM_SC_PS(FTM0_CLK_PRESCALE);
+  FTM0_SC |= FTM_SC_PS(FTM0_CLK_PRESCALE); // Sets clock prescale value. Not sure about this.
 
-  FTM0_EXTTRIG |= 0x08;
-
+  FTM0_EXTTRIG |= 0x08; // external trigger channel to fire (so, here is where we set multiple adc fire triggers?
   //FTM0_EXTTRIG = FTM_EXTTRIG_CH5TRIG; // q on this
 
   // Interrupts
   // FTM0_SC |= FTM_SC_TOIE; //Enable the interrupt mask.  timer overflow interrupt.. enables interrupt signal to come out of the module itself...  (have to enable 2x, one in the peripheral and once in the NVIC
-
   // NVIC_SET_PRIORITY(IRQ_FTM0, 64);
   // NVIC_ENABLE_IRQ(IRQ_FTM0);
 }
 
-void ADCInit(void) {
-  SIM_SCGC5 = SIM_SCGC5 | 0x3E00;
-  SIM_SCGC3 |= 0x08000000;
-  ADC1_CFG1 = 0x44; // adc clock is bus clock / 2
-  ADC1_CFG2 = 0x00;
-  ADC1_SC2 = 0x40; // hardware triggered
-  ADC1_SC3 = 0x00; // not continuous conversion
-  ADC1_SC1A = 0x54; // interrupt enable and select ADC1_DM1 channel
-  // set such that FTM0 to trigger ADC1
-  SIM_SOPT7 = 0x8800; // FTM0 triggers ADC1, alternative triggering, only adc1_sc1a // conversion is valid ?
-
-  NVIC_SET_PRIORITY(IRQ_ADC1, 8);
-  NVIC_ENABLE_IRQ(IRQ_ADC1);
-  /*
-    NVICIP58 = 0x30;  // setting interrupt of ADC1
-    NVICICPR1 |= 1 << 26; // clear the pending register of interrupt source 58
-    NVICISER1 |= 1 << 26; // set the interrupt source of ADC1
-  */
+void T3PWM::setPhases(unsigned short phase_a, unsigned short phase_b, unsigned short phase_c) { // * were unsigned short 's
+  unsigned _mod = FTM0_MOD/2;
+  FTM0_C0V = _mod - phase_a;
+  FTM0_C1V = _mod + phase_a;
+  FTM0_C2V = _mod - phase_b;
+  FTM0_C3V = _mod + phase_b;
+  FTM0_C4V = _mod - phase_c;
+  FTM0_C5V = _mod + phase_c;
+  FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
 }
 
-unsigned short result0RA;
-unsigned short result1RA;
-
-volatile uint8_t led = 0;
-
-const uint8_t ledPin = 13;
-const bool on = HIGH;
-const bool off = LOW;
-
-/*
-void adc0_isr(void){
-  if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    result0RA = (unsigned short)ADC0_RA; // adc result data register
-      led = ~led;
-      digitalWrite(13, led);
-  }
-  led = ~led;
-  digitalWrite(13, led);
-}
-*/
-void adc1_isr(void){
-  digitalWriteFast(ledPin, on);
-  if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    result1RA = (unsigned short)ADC1_RA; // adc result data register
-  }
-  digitalWriteFast(ledPin, off);
-}
-
-volatile uint8_t fourt = 0;
-
-void ftm0_isr(void) {
-  if (FTM0_SC & FTM_SC_TOF) { // clearing FTM interrupt flag
-    FTM0_SC &= ~FTM_SC_TOF;
-    fourt = ~ fourt;
-    digitalWrite(14, fourt);
-    fourt = ~ fourt;
-    digitalWrite(14, fourt);
-  }
-}
-
-void PWM_SetDutyCycle(unsigned short pwm1, unsigned short pwm2, unsigned short pwm3)
-{
-  unsigned mod = FTM0_MOD / 2;
-  FTM0_C0V = mod - pwm1;
-  FTM0_C1V = mod + pwm1;
-  FTM0_C2V = mod - pwm2;
-  FTM0_C3V = mod + pwm2;
-  FTM0_C4V = mod - pwm3;
-  FTM0_C5V = mod + pwm3;
-  FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;
-}
-
-void PWM_BreakeModeEnd()
-{
-  // SWOCTRL Bit Fields
-  // u,v,w durch Software steuern und mit '0' �berschreiben, damit x,y,z mittels PWM bremsen koennen
-  FTM0_SWOCTRL &= ~FTM_SWOCTRL_CH1OC & ~FTM_SWOCTRL_CH3OC & ~FTM_SWOCTRL_CH5OC;
-}
-
-void PWM_BreakeMode()
-{
-  // SWOCTRL Bit Fields
-  // u,v,w set low in software so that x,y,z pwms can be used for braking
-  FTM0_SWOCTRL |= FTM_SWOCTRL_CH1OC | FTM_SWOCTRL_CH3OC | FTM_SWOCTRL_CH5OC;
-  FTM0_SWOCTRL &= ~FTM_SWOCTRL_CH1OCV & ~FTM_SWOCTRL_CH3OCV & ~FTM_SWOCTRL_CH5OCV;
-}
-
-void PWM_Force0() {
-  // SWOCTRL Bit Fields
-  // Force all outoputs to LOW
-  FTM0_SWOCTRL |= FTM_SWOCTRL_CH0OC | FTM_SWOCTRL_CH1OC | FTM_SWOCTRL_CH2OC
-                  | FTM_SWOCTRL_CH3OC | FTM_SWOCTRL_CH4OC | FTM_SWOCTRL_CH5OC;
-  FTM0_SWOCTRL &= ~FTM_SWOCTRL_CH0OCV & ~FTM_SWOCTRL_CH1OCV & ~FTM_SWOCTRL_CH2OCV &
-                  ~FTM_SWOCTRL_CH3OCV & ~FTM_SWOCTRL_CH4OCV & ~FTM_SWOCTRL_CH5OCV;
-}
-
-void PWM_Enable() {
-  // SWOCTRL Bit Fields
-  // Force all outoputs to LOW
-  FTM0_SWOCTRL &= ~FTM_SWOCTRL_CH0OC & ~FTM_SWOCTRL_CH1OC & ~FTM_SWOCTRL_CH2OC &
-                  ~FTM_SWOCTRL_CH3OC & ~FTM_SWOCTRL_CH4OC & ~FTM_SWOCTRL_CH5OC;
-}
-
-void PWM_Break(unsigned short strength)  // PWM abschalten
+void T3PWM::setBrake(uint16_t strength)  // PWM abschalten
 {
   FTM0_C0V = 0;
   FTM0_C1V = strength * 2;
@@ -219,7 +152,7 @@ void PWM_Break(unsigned short strength)  // PWM abschalten
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;
 }
 
-void PWM_DisableChannel()  // PWM abschalten
+void T3PWM::setPhasesLow()  // PWM abschalten
 {
   FTM0_C0V = 0;
   FTM0_C1V = 0;
@@ -229,3 +162,20 @@ void PWM_DisableChannel()  // PWM abschalten
   FTM0_C5V = 0;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;
 }
+
+/*
+   as-of-now unused interrupt, leaving this here in case this ever becomes useful...
+  volatile uint8_t fourt = 0;
+
+  void ftm0_isr(void) {
+  if (FTM0_SC & FTM_SC_TOF) { // clearing FTM interrupt flag
+    FTM0_SC &= ~FTM_SC_TOF;
+    fourt = ~ fourt;
+    digitalWrite(14, fourt);
+    fourt = ~ fourt;
+    digitalWrite(14, fourt);
+  }
+  }
+*/
+
+
