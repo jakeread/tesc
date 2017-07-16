@@ -66,6 +66,9 @@ void T3PWM::init() {
   // Also need to setup the FTM0C0SC channel control register
   FTM0_CNT = 0x0; //FTM Counter Value - reset counter to zero
   FTM0_MOD = (PERIPHERAL_BUS_CLOCK / (1 << FTM0_CLK_PRESCALE)) / FTM0_OVERFLOW_FREQUENCY ; //Set the overflow rate
+  /* 
+   *  = 48MHz / 0(?) / 11718Hz = 4096.2621 ~ 12 bits resolution, 0 - 4096,
+   */
   FTM0_CNTIN = 0; //Set the Counter Initial Value to 0
 
   // FTMx_CnSC - contains the channel-interrupt status flag control bits
@@ -109,11 +112,17 @@ void T3PWM::init() {
   FTM0_C3V = FTM0_MOD / 2;
   FTM0_C4V = FTM0_MOD / 2;
   FTM0_C5V = FTM0_MOD / 2;
+  /*
+   * DTENx enable deadtime insertion on ch (0: 0 & 1) (1: 2 & 3) (2: 4 & 5) (3: 6 & 7)
+   * SYNCENx enable pwm sync of ch -
+   * COMBINEx combine ch - 
+   * COMPx channels ch - are compliments of one another
+   */
   FTM0_COMBINE = FTM_COMBINE_DTEN0 | FTM_COMBINE_SYNCEN0 | FTM_COMBINE_COMBINE0 | FTM_COMBINE_COMP0 |
                  FTM_COMBINE_DTEN1 | FTM_COMBINE_SYNCEN1 | FTM_COMBINE_COMBINE1 | FTM_COMBINE_COMP1 |
                  FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2 | FTM_COMBINE_COMBINE2 | FTM_COMBINE_COMP2;
 
-  FTM0_DEADTIME = FTM0_DEADTIME_DTVAL; //About 5usec, value is in terms of system clock cycles
+  FTM0_DEADTIME = FTM_DEADTIME_DTVAL(5); //About 5usec, value is in terms of system clock cycles
 
   FTM0_MODE |= FTM_MODE_INIT;
 
@@ -130,8 +139,8 @@ void T3PWM::init() {
   // NVIC_ENABLE_IRQ(IRQ_FTM0);
 }
 
-void T3PWM::setPhases(unsigned short phase_a, unsigned short phase_b, unsigned short phase_c) { // * were unsigned short 's
-  unsigned _mod = FTM0_MOD/2;
+void T3PWM::setPhases(unsigned short phase_a, unsigned short phase_b, unsigned short phase_c) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
+  unsigned _mod = FTM0_MOD/2; // TODO: re-write MOD as const 4096 -> 
   FTM0_C0V = _mod - phase_a;
   FTM0_C1V = _mod + phase_a;
   FTM0_C2V = _mod - phase_b;

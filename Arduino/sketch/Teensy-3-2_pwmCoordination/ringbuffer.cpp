@@ -1,4 +1,4 @@
-#include "ringBuffer.h"
+#include "ringbuffer.h"
 
 RingBuffer::RingBuffer(){
   _listPosition = 0;

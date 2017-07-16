@@ -1,8 +1,19 @@
+/*
+ * TODO: 
+ * - Speedy SVPWM Algorithm
+ * - hotwire existing board, setup DAC channels etc, test svm on open-loop, read dac & display
+ * - controller loop sketch w/ interrupts... detail, buffers, filtering, 
+ * - prototype transforms maths, implement
+ * - kernel / modules, what where?
+ */
+
 #include "t3pwm.h" // chip-specific implementations
 #include "t3adc.h"
 
-T3PWM* thePWM;
+#include "svpwm.h"
+
 T3ADC* theADC;
+SVPWM* theSVPWM;
 
 // Sin table normalized to amplitude of 600, 180 deg zero values, 2 degree angle resolution (to re-write when doing proper svpwm code)
 const uint16_t sintable[] = {
@@ -17,7 +28,7 @@ const uint16_t sintable[] = {
 byte u = 0;       // Phase U ->   0 Grad Referenz
 byte v = 180 - 60; // Phase V -> 120 Grad später
 byte w = 180 - 120; // Phase W -> 240 Grad später
-byte Ramp = 1; // Spannungsabsenkung bei kleinen Drehzahlen
+int multiple = 3; // Spannungsabsenkung bei kleinen Drehzahlen
 
 const uint8_t tickPin = 14;
 const uint8_t ledPin = 13;
@@ -34,12 +45,12 @@ void setup () {
   pinMode(tickPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
 
-  thePWM = new T3PWM();
+  theSVPWM = new SVPWM();
   theADC = new T3ADC(PIN_SENSA_A, PIN_SENSA_B, PIN_SENSA_C, PIN_SENSV_A, PIN_SENSV_B, PIN_SENSV_C);
   // initialize the digital pin as an output.
 
 
-  thePWM->init();
+  theSVPWM->init();
   theADC->init();
 
   timer_Sin.begin(TimerSin, 1000); //   Timer
@@ -61,7 +72,7 @@ void loop ()
 
 void TimerSin()
 {
-  thePWM->setPhases(sintable[u] / Ramp, sintable[v] / Ramp, sintable[w] / Ramp); // PWM-Tastverhältnis für Phase u setzen, Aplitude skalieren
+  theSVPWM->directPhases(sintable[u]*multiple, sintable[v]*multiple, sintable[w]*multiple); // PWM-Tastverhältnis für Phase u setzen, Aplitude skalieren
 
   u++;
   if (u == 180) u = 0;
