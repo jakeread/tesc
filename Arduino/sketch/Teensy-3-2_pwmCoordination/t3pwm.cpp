@@ -36,12 +36,12 @@ void T3PWM::init() {
   SIM_SCGC6 |= SIM_SCGC6_FTM0;
 
   // Pin Settings
-  PORTC_PCR1 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN0 Pin 22
-  PORTC_PCR2 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN1 Pin 23
-  PORTC_PCR3 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN2 Pin 9
-  PORTC_PCR4 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN3 Pin 10
-  PORTD_PCR4 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN4 Pin 6
-  PORTD_PCR5 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN5 Pin 20
+  PORTC_PCR1 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN0 Pin 22 // u, hi
+  PORTC_PCR2 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN1 Pin 23 // u, lo
+  PORTD_PCR6 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN6 Pin 21 // v, hi
+  PORTD_PCR7 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN7 Pin 5  // v, lo
+  PORTD_PCR4 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN4 Pin 6  // w, hi
+  PORTD_PCR5 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN5 Pin 20 // w, lo
 
   /* 36.4.9 Complementary mode
     The Complementary mode is selected when:
@@ -83,14 +83,14 @@ void T3PWM::init() {
   // want to enable channel interrupts here, run something on isr ?
 
   // FTMx_CnSC - contains the channel-interrupt status flag control bits
-  FTM0_C2SC |= FTM_CSC_ELSB; //Edge or level select
-  FTM0_C2SC &= ~FTM_CSC_ELSA; //Edge or level Select
-  FTM0_C2SC |= FTM_CSC_MSB; //Channel Mode select
+  FTM0_C6SC |= FTM_CSC_ELSB; //Edge or level select
+  FTM0_C6SC &= ~FTM_CSC_ELSA; //Edge or level Select
+  FTM0_C6SC |= FTM_CSC_MSB; //Channel Mode select
 
   // FTMx_CnSC - contains the channel-interrupt status flag control bits
-  FTM0_C3SC |= FTM_CSC_ELSB; //Edge or level select
-  FTM0_C3SC &= ~FTM_CSC_ELSA; //Edge or level Select
-  FTM0_C3SC |= FTM_CSC_MSB; //Channel Mode select
+  FTM0_C7SC |= FTM_CSC_ELSB; //Edge or level select
+  FTM0_C7SC &= ~FTM_CSC_ELSA; //Edge or level Select
+  FTM0_C7SC |= FTM_CSC_MSB; //Channel Mode select
 
   // FTMx_CnSC - contains the channel-interrupt status flag control bits
   FTM0_C4SC |= FTM_CSC_ELSB; //Edge or level select
@@ -108,8 +108,8 @@ void T3PWM::init() {
   //FTMx_CnV contains the captured FTM counter value, this value determines the pulse width
   FTM0_C0V = FTM0_MOD / 2;
   FTM0_C1V = FTM0_MOD / 2;
-  FTM0_C2V = FTM0_MOD / 2;
-  FTM0_C3V = FTM0_MOD / 2;
+  FTM0_C6V = FTM0_MOD / 2;
+  FTM0_C7V = FTM0_MOD / 2;
   FTM0_C4V = FTM0_MOD / 2;
   FTM0_C5V = FTM0_MOD / 2;
   /*
@@ -119,10 +119,10 @@ void T3PWM::init() {
    * COMPx channels ch - are compliments of one another
    */
   FTM0_COMBINE = FTM_COMBINE_DTEN0 | FTM_COMBINE_SYNCEN0 | FTM_COMBINE_COMBINE0 | FTM_COMBINE_COMP0 |
-                 FTM_COMBINE_DTEN1 | FTM_COMBINE_SYNCEN1 | FTM_COMBINE_COMBINE1 | FTM_COMBINE_COMP1 |
+                 FTM_COMBINE_DTEN3 | FTM_COMBINE_SYNCEN3 | FTM_COMBINE_COMBINE3 | FTM_COMBINE_COMP3 |
                  FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2 | FTM_COMBINE_COMBINE2 | FTM_COMBINE_COMP2;
 
-  FTM0_DEADTIME = FTM_DEADTIME_DTVAL(5); //About 5usec, value is in terms of system clock cycles
+  FTM0_DEADTIME = FTM_DEADTIME_DTVAL(20); //About 0.5usec, value is in terms of system clock cycles
 
   FTM0_MODE |= FTM_MODE_INIT;
 
@@ -139,14 +139,14 @@ void T3PWM::init() {
   // NVIC_ENABLE_IRQ(IRQ_FTM0);
 }
 
-void T3PWM::setPhases(unsigned short phase_a, unsigned short phase_b, unsigned short phase_c) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
+void T3PWM::setPhases(unsigned short phase_u, unsigned short phase_v, unsigned short phase_w) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
   unsigned _mod = FTM0_MOD/2; // TODO: re-write MOD as const 4096 -> 
-  FTM0_C0V = _mod - phase_a;
-  FTM0_C1V = _mod + phase_a;
-  FTM0_C2V = _mod - phase_b;
-  FTM0_C3V = _mod + phase_b;
-  FTM0_C4V = _mod - phase_c;
-  FTM0_C5V = _mod + phase_c;
+  FTM0_C0V = _mod - phase_u;
+  FTM0_C1V = _mod + phase_u;
+  FTM0_C6V = _mod - phase_v;
+  FTM0_C7V = _mod + phase_v;
+  FTM0_C4V = _mod - phase_w;
+  FTM0_C5V = _mod + phase_w;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
 }
 
@@ -154,8 +154,8 @@ void T3PWM::setBrake(uint16_t strength)  // PWM abschalten
 {
   FTM0_C0V = 0;
   FTM0_C1V = strength * 2;
-  FTM0_C2V = 0;
-  FTM0_C3V = strength * 2;
+  FTM0_C6V = 0;
+  FTM0_C7V = strength * 2;
   FTM0_C4V = 0;
   FTM0_C5V = strength * 2;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;
@@ -165,8 +165,8 @@ void T3PWM::setPhasesLow()  // PWM abschalten
 {
   FTM0_C0V = 0;
   FTM0_C1V = 0;
-  FTM0_C2V = 0;
-  FTM0_C3V = 0;
+  FTM0_C6V = 0;
+  FTM0_C7V = 0;
   FTM0_C4V = 0;
   FTM0_C5V = 0;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;

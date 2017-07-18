@@ -15,19 +15,36 @@ class SVPWM {
   SVPWM();
   void init();
 
-  int doVector(float a, float b);
+  int doAngular(double theta, double mag);
+  int doVector(double a, double b);
   int directPhases(int u, int v, int w); // b/c T3PWM belongs to SVPWM, only access thru kernel is thru here
   int killPhases(); // kills all phases
 
   T3PWM* t3pwm;
 
   private:
-  float _a;
-  float _b;
+  double _a;
+  double _b;
+  double _mag;
+  double _theta;
+  double _omega;
+  
+  uint8_t _sector;
 
-  int _u;
-  int _v;
-  int _w;
+  double _tz_a;
+
+  double _t0;
+  double _t1;
+  double _t2;
+  
+  double _sa;
+  double _sb1;
+  double _sb2;
+  double _sc;
+
+  uint16_t _tu; // = tu
+  uint16_t _tv; // = tv
+  uint16_t _tw; // = tw
 };
 
 #endif

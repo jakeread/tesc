@@ -59,15 +59,27 @@ const uint8_t ADC::sc1a2channelADC1[]= { // new version, gives directly the pin 
     43
 };
 
+#elif defined(__MK20DX256__) // from PRJC core
+static const uint8_t pin2sc1a[] = {
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, 0, 19, 3, 19+128, // 0-13 -> A0-A13
+  5, 14, 8, 9, 13, 12, 6, 7, 15, 4, // 14-23 are A0-A9
+  255, 255, // 24-25 are digital only
+  5+192, 5+128, 4+128, 6+128, 7+128, 4+192, // 26-31 are A15-A20
+  255, 255, // 32-33 are digital only
+  0, 19, 3, 19+128, // 34-37 are A10-A13
+  26,     // 38 is temp sensor,
+  18+128, // 39 is vref
+  23      // 40 is A14
+};
+
 */
 
-T3ADC::T3ADC(uint8_t pin_sensa_a, uint8_t pin_sensa_b, uint8_t pin_sensa_c, uint8_t pin_sensv_a, uint8_t pin_sensv_b, uint8_t pin_sensv_c){
-  _pin_sensa_a = pin_sensa_a;
-  _pin_sensa_b = pin_sensa_b;
-  _pin_sensa_c = pin_sensa_c;
-  _pin_sensv_a = pin_sensv_a;
-  _pin_sensv_b = pin_sensv_b;
-  _pin_sensv_c = pin_sensv_c;
+T3ADC::T3ADC(uint8_t pin_sensa_u, uint8_t pin_sensa_v, uint8_t pin_sensv_u, uint8_t pin_sensv_v, uint8_t pin_sensv_w){
+  _pin_sensa_u = pin_sensa_u;
+  _pin_sensa_v = pin_sensa_v;
+  _pin_sensv_u = pin_sensv_u;
+  _pin_sensv_v = pin_sensv_v;
+  _pin_sensv_w = pin_sensv_w;
 }
 
 void T3ADC::init(){
@@ -84,12 +96,14 @@ void T3ADC::init(){
   ADC0_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(0);
   ADC1_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(0); // not continuous conversion, hardware average enabled, 4 samples
   // ADC1 Interrupt Setup / Triggers
-  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(30);
-  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(16); // interrupt enable and select ADC1_DM1 channel // channel -> pin in chart above (thx pevide)
+  // interrupt enable and select ADC1_DM1 channel // channel -> pin in chart above (thx pevide)
+  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5
+  // ADC0_CFG2 |= ADC_CFG2_MUXSEL;
+  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(9); // A3
   // enable ADC1, ADC0 alternate trigger select, and select trigger 8 (ftm0)
   SIM_SOPT7 = SIM_SOPT7_ADC1ALTTRGEN | SIM_SOPT7_ADC1TRGSEL(8) | SIM_SOPT7_ADC0ALTTRGEN | SIM_SOPT7_ADC0TRGSEL(8); 
   // Setup ADC1, ADC0 Interrupt
-  NVIC_SET_PRIORITY(IRQ_ADC0, 8);
+  NVIC_SET_PRIORITY(IRQ_ADC0, 16);
   NVIC_ENABLE_IRQ(IRQ_ADC0);
   NVIC_SET_PRIORITY(IRQ_ADC1, 8);
   NVIC_ENABLE_IRQ(IRQ_ADC1);

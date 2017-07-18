@@ -10,3 +10,5 @@ DRV8302
 CAN Bus on Teensy is native -> probably leave these pins open, why not? Do hz research
 
 GND tab to probe / hook
+
+

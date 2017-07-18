@@ -9,34 +9,31 @@
 class T3ADC {
   public:
 
-  T3ADC(uint8_t pin_sensa_a, uint8_t pin_sensa_b, uint8_t pin_sensa_c, uint8_t pin_sensv_a, uint8_t pin_sensv_b, uint8_t pin_sensv_c);
+  T3ADC(uint8_t pin_sensa_u, uint8_t pin_sensa_v, uint8_t pin_sensv_u, uint8_t pin_sensv_v, uint8_t pin_sensv_w);
 
   void init();
 
-  RingBuffer RB_SENSA_A; // holdin on' to raw adc values from these pins
-  RingBuffer RB_SENSA_B;
-  RingBuffer RB_SENSA_C;
+  RingBuffer RB_SENSA_U; // holdin on' to raw adc values from these pins
+  RingBuffer RB_SENSA_V;
 
-  RingBuffer RB_SENSV_A; // yar, lots of adc's to handle !
-  RingBuffer RB_SENSV_B;
-  RingBuffer RB_SENSV_C;
+  RingBuffer RB_SENSV_U; // yar, lots of adc's to handle !
+  RingBuffer RB_SENSV_V;
+  RingBuffer RB_SENSV_W;
 
   private:
 
-  uint8_t _pin_sensa_a;
-  uint8_t _pin_sensa_b;
-  uint8_t _pin_sensa_c;
-  uint8_t _pin_sensv_a;
-  uint8_t _pin_sensv_b;
-  uint8_t _pin_sensv_c;
+  uint8_t _pin_sensa_u;
+  uint8_t _pin_sensa_v;
+  uint8_t _pin_sensv_u;
+  uint8_t _pin_sensv_v;
+  uint8_t _pin_sensv_w;
 
   // readings holders -> but perhaps we can write register direct -> ringBuffer
-  uint16_t _sensa_a_reading;
-  uint16_t _sensa_b_reading;
-  uint16_t _sensa_c_reading;
-  uint16_t _sensv_a_reading;
-  uint16_t _sensv_b_reading;
-  uint16_t _sensv_c_reading;
+  uint16_t _sensa_u_reading;
+  uint16_t _sensa_v_reading;
+  uint16_t _sensv_u_reading;
+  uint16_t _sensv_v_reading;
+  uint16_t _sensv_w_reading;
 
   // tick (to track timing on scope) 
   // are const & use digitalWriteFast to use optimized code w/ PRJC so that scope traces are best aligned w/ adc reading

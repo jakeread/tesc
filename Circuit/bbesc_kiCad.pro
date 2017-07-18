@@ -1,4 +1,4 @@
-update=5/29/2017 11:18:17 AM
+update=7/18/2017 3:52:10 PM
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,5 +61,6 @@ LibName31=ir2101_kiCadComponent
 LibName32=/home/jake/smartPcb/diagnostic-v03/rev1/smd-compLib
 LibName33=teensy_3-2_kiCadComponent
 LibName34=/home/jake/smartPcb/diagnostic-v03/rev1/SMD-pcb-v03-r01-cache
+LibName35=ina21x
 [general]
 version=1
