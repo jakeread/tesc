@@ -54,13 +54,14 @@ void FOC::runDQPID(){
 void FOC::doPark(){ // does a, b + encoder -> d, q;
     // wrong -> do direct encoder -> vector -> vector + phaseAdvance -> svpwm
     // do search for phase advance? auto setup closed loop?
+    /*
   _encoder = KERNEL->as5047->getFiltered();
   _theta = (_encoder % MOTOR_MODULO) * MOTOR_MODULO_OVER_TWO_PI;
   _aReading = cos(_theta); // position vector, will be current vector in FOC, is no bc only encoder at the moment
   _bReading = sin(_theta);
   _dCommand = cos(_theta-_recession)*_bReading - sin(_theta-_recession)*_aReading; // quadrature
   _qCommand = sin(_theta-_recession)*_bReading) + cos(_theat-_recession)*_aReading; // direct, these are flipped in mag. bc we are direct-commutating
-  
+  */
 }
 
 void FOC::doInvPark(){ // does d, q + encoder -> a, b;

@@ -20,6 +20,8 @@
 
 #define RBUF_LENGTH                 256
 
+#define MOTOR_MODULO                1489
+
 #endif
 // new
 

@@ -10,7 +10,7 @@
  * does a, b commands -> u, v, w PID commands (inverse clarke transform)
  */
 
-#include <Ardunio.h>
+#include <Arduino.h>
 #include "config.h"
 #include "constants.h"
 #include "svpwm.h"
@@ -20,8 +20,8 @@ class FOC{
 
   FOC();
 
-  init();
-  doLoop(); // fire from ADC conversion-complete interrupt, every / other depending on hz of pwm ?
+  void init();
+  void doLoop(); // fire from ADC conversion-complete interrupt, every / other depending on hz of pwm ?
 
   private:
   // phase current values

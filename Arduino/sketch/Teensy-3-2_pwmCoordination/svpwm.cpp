@@ -18,6 +18,7 @@ void SVPWM::init() {
 
 int SVPWM::doAngular(double theta, double mag) {
   this->doVector((mag * cos(theta)), (mag * sin(theta)));
+  return 0;
 }
 
 /*

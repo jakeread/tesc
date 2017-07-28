@@ -12,8 +12,8 @@
 T3ADC* theADC;
 SVPWM* theSVPWM;
 
-const uint8_t tickPin = 14;
-const uint8_t ledPin = 13;
+const uint8_t tickPin = 13;
+const uint8_t ledPin = 14;
 const bool on = HIGH;
 const bool off = LOW;
 
@@ -40,7 +40,7 @@ void loop (){
   digitalWriteFast(tickPin, on);
   ctr = 0;
   for(float p = 0; p < TWO_PI; p += PI/144){
-    //theSVPWM->doAngular(p, 3.5);
+    theSVPWM->doAngular(p, 3.5);
     #define DEBUG_ADC_VALS
     #ifdef DEBUG_ADC_VALS
     if(!(ctr % 24)){
