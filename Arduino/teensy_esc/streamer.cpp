@@ -1,8 +1,10 @@
 #include "streamer.h"
 #include "kernel.h"
 
-#include "sampler.h"
-#include "ringBuffer.h"
+#include "vsens.h"
+#include "rb.h"
+
+#include "foc.h"
 
 /*
  * ! these functions should all actually stay independent of shell, 
@@ -53,24 +55,22 @@ void Streamer::streamVarsTest(){
 void Streamer::streamVarsVoltages(){
   Serial.print("#");
   Serial.print(millis());
-  Serial.print("va:");
-  Serial.print(KERNEL->sampler->rbva->latest());
-  Serial.print("vb:");
-  Serial.print(KERNEL->sampler->rbvb->latest());
-  Serial.print("vc:");
-  Serial.print(KERNEL->sampler->rbvc->latest());
+  Serial.print("vu:");
+  Serial.print(KERNEL->vsens->rbvu->latest());
+  Serial.print("vv:");
+  Serial.print(KERNEL->vsens->rbvv->latest());
+  Serial.print("vw:");
+  Serial.print(KERNEL->vsens->rbvw->latest());
   Serial.println("");
 }
 
 void Streamer::streamVarsCurrents(){
   Serial.print("#");
   Serial.print(millis());
-  Serial.print(" aa:");
-  Serial.print(KERNEL->sampler->rbaa->latest());
-  Serial.print(" ab:");
-  Serial.print(KERNEL->sampler->rbab->latest());
-  Serial.print(" ac:");
-  Serial.print(KERNEL->sampler->rbac->latest());
+  Serial.print(" au:");
+  Serial.print(KERNEL->foc->t3adc->rbau->latest());
+  Serial.print(" av:");
+  Serial.print(KERNEL->foc->t3adc->rbav->latest());
   Serial.println("");
 }
 

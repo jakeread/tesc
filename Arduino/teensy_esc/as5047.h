@@ -1,9 +1,9 @@
-#ifndef ENCODER_AS5047_H
-#define ENCODER_AS5047_H
+#ifndef AS5047_H
+#define AS5047_H
 
 #include <Arduino.h>
 #include "t3spi.h"
-#include "ringbuffer.h"
+#include "rb.h"
 #include "config.h"
 
 class AS5047 {

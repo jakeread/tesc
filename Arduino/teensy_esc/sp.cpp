@@ -2,14 +2,13 @@
 #include "kernel.h"
 #include "shell.h"
 
-SP::SP(int baudRate) { // could just read-direct from config, here
-  _baudRate = baudRate;
+SP::SP() { // could just read-direct from config, here
   _status = SERIAL_STATUS_OFF;
 
 }
 
 void SP::init() {
-  Serial.begin(_baudRate);
+  Serial.begin(THE_BAUDRATE);
 
   _inString.reserve(256);
   _inStringComplete = false;

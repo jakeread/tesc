@@ -1,17 +1,17 @@
 // does straightforward BLDC commutation
 #include "bldc.h"
 #include "kernel.h"
-#include "encoder_as5047.h"
+#include "as5047.h"
 
-BLDC::BLDC(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLoC) {
+BLDC::BLDC() {
 
   analogWriteResolution(LEG_PWMRES);
   // 8-bit analog (pwm) write resolution // values 0-255
   // & maching freq as per https://www.pjrc.com/teensy/td_pulse.html set in motorleg
 
-  MLA = new MotorLeg(pinHiA, pinLoA); // TODO: rename to phases U V M
-  MLB = new MotorLeg(pinHiB, pinLoB);
-  MLC = new MotorLeg(pinHiC, pinLoC);
+  MLU = new MotorLeg(PIN_HI_U, PIN_LO_U); // TODO: rename to phases U V M
+  MLV = new MotorLeg(PIN_HI_V, PIN_LO_V);
+  MLW = new MotorLeg(PIN_HI_W, PIN_LO_W);
 
   _duty = 125;
   _dir = 1;
@@ -30,9 +30,9 @@ void BLDC::init() {
 }
 
 bool BLDC::killAllPower() {
-  MLA->kill();
-  MLB->kill();
-  MLC->kill();
+  MLU->kill();
+  MLV->kill();
+  MLW->kill();
   return true;
 }
 
@@ -162,8 +162,9 @@ void BLDC::commutate(uint8_t comPos) {
 
   _comloc = comPos % 6;
 
-  MLA->set(_duty, comtable[_comloc][0]);
-  MLB->set(_duty, comtable[_comloc][1]);
-  MLC->set(_duty, comtable[_comloc][2]);
+  MLU->set(_duty, comtable[_comloc][0]);
+  MLV->set(_duty, comtable[_comloc][1]);
+  MLW->set(_duty, comtable[_comloc][2]);
 
 }
+

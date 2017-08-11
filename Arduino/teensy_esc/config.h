@@ -14,20 +14,18 @@
 
 // PINS
 
-#define PIN_HI_A                    10
-#define PIN_LO_A                    9
-#define PIN_HI_B                    6
-#define PIN_LO_B                    5
-#define PIN_HI_C                    4
-#define PIN_LO_C                    3
+// BLDC Specific (uses abstracted pwm) (SVPWM / FOC PWM modules use register-written pin configs in t3pwm.cpp)
+#define PIN_HI_U                    22
+#define PIN_LO_U                    23
+#define PIN_HI_V                    21
+#define PIN_LO_V                    5
+#define PIN_HI_W                    6
+#define PIN_LO_W                    20
 
-#define PIN_SENSV_A                 A3
-#define PIN_SENSV_B                 A4
-#define PIN_SENSV_C                 A5
-
-#define PIN_SENSA_A                 A7
-#define PIN_SENSA_B                 A8
-#define PIN_SENSA_C                 A9
+// ADC for Voltages (adc for amperage measurement is linked to t3adc.cpp register-writing)
+#define PIN_VSENS_U                 A2
+#define PIN_VSENS_V                 A4
+#define PIN_VSENS_W                 A10
 
 // ENCODER SETUPS
 
@@ -59,7 +57,7 @@
 
 // LOOP SPEEDS
 
-#define MACHINE_LOOP_DEFAULT_HZ     20000
+#define MACHINE_LOOP_DEFAULT_HZ     8000
 #define MACHINE_LOOP_SECONDARY      500      // so we get 1000hz & 25000hz w/ one timer
 #define SAMPLE_DEFAULT_HZ           10000
 
@@ -70,8 +68,11 @@
 
 // BLDC
 
-#define IS_BLDC_MACHINE             1
-#define IS_FOC_MACHINE              0
+#define IS_BLDC_MACHINE             0
+#define IS_FOC_MACHINE              1
+
+#define BLDC_INPUTMODE_POT        1
+#define BLDC_INPUTMODE_SHELL      0
 
 #if IS_BLDC_MACHINE && IS_FOC_MACHINE
 #warning WTF

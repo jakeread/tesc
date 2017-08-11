@@ -19,7 +19,7 @@
 class SP{
 
   public:
-  SP(int baudRate);
+  SP();
 
   void init();
   int status();

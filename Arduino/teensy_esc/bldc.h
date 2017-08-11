@@ -2,20 +2,17 @@
 #define BLDC_H
 
 #include <Arduino.h>
-#include "motorleg.h"
+#include "ml.h"
 #include "config.h"
-
-#define BLDC_INPUTMODE_POT        1
-#define BLDC_INPUTMODE_SHELL      0
 
 class BLDC {
 
   public:
-    BLDC(int pinHiA, int pinLoA, int pinHiB, int pinLoB, int pinHiC, int pinLoC); // constructor
+    BLDC(); // constructor
 
-    MotorLeg* MLA;
-    MotorLeg* MLB;
-    MotorLeg* MLC;
+    MotorLeg* MLU;
+    MotorLeg* MLV;
+    MotorLeg* MLW;
 
     void init();          // starts timers
 
@@ -81,3 +78,4 @@ class BLDC {
 };
 
 #endif
+

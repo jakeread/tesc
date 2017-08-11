@@ -1,6 +1,6 @@
 // Does SPI Footwork, averaging
 
-#include "encoder_as5047.h"
+#include "as5047.h"
 
 AS5047::AS5047(){
   // cnstructor
@@ -8,7 +8,7 @@ AS5047::AS5047(){
 
 void AS5047::init(){
   
-  SPI_AS5047.begin_MASTER(ALT_SCK, ALT_MOSI, ALT_MISO, CS4, CS_ActiveLOW);
+  SPI_AS5047.begin_MASTER(ALT_SCK, ALT_MOSI, ALT_MISO, CS1, CS_ActiveLOW);
   SPI_AS5047.setCTAR(CTAR_0, 16, SPI_MODE1, LSB_FIRST, SPI_CLOCK_DIV8); // DIV2 is no-go
 
   readWord = 0x3FFF | 0x4000 | 0x8000;
@@ -27,7 +27,7 @@ void AS5047::init(){
 
 void AS5047::readNow(){
   // TODO: check parity bit, that readings make sense, etc
-  SPI_AS5047.txrx16(readWords, returnWords, 2, CTAR_0, CS4);
+  SPI_AS5047.txrx16(readWords, returnWords, 2, CTAR_0, CS1);
 
   _reading = returnWords[1] << 2;
   _reading /= 4;

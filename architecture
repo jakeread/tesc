@@ -1,36 +1,29 @@
 BBESC // Teensy ESC Top-level Architecture
 
-Timers
-	Sampler			(40 kHz)(?) Sampling, averages / filtered / cleaned-up values on request
-	MotorControl 	(15 kHz)(?) Does Motor-control stuff: BLDC (now) commutation, FOC control..
-
 Kernel->
 	BLDC->MotorLegs								(operates motor while in BLDC mode)
 		Does no coms, is switched by other softwares.
 		On loops, timer calls these f'ns
 		Internal f'ns block fuck ups (like outsidebounds errors, etc)
-	FOC->SVM->MotorLegs 						(operates motor in FOC mode)
-	Sampler	->AS5047	->ringBuffers 			(home of all measurements)
-						->t3spi
-			->ADC'S 	->ringBuffers
-		Does no coms, is read-from other softwares
-		On loops, timer calls these f'ns
+	FOC ->svpwm->t3pwm
+		->t3adc
+		all FOC business
+	AS5047
+		Reads encoder
+	VSens
+		Reads Voltages on ADCs
 	SPB											(Serial Block and Parse || chit-chat)
 		Handles incoming serial chars
-		? Has secondary outgoing buffer for really big message ques ... i.e. from ringBufferDumps
 	Shell										(acts like terminal, write commands here)
 		No buffering, command-specific 'scripts' ... i.e. bldc calcoffset
 		shell commands tend to be module-associated, should have 'help' f'ns
 	Streamer									(fires data -> roboscpd for analysis)
 
 
-	*not implemented*
-	Planner	->Kinematics						(fun fun fun maths :| want 2 be here)
-			->GCodeBuffer ->GCode[s] 			(ringbuffer of gcode objects)
-
-Config.h
+config.h
 	global vars / constants
-
+constants.h
+	maths w/o maths
 
 Shell Commands:
 	test

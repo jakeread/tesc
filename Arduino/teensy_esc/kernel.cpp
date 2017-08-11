@@ -3,18 +3,18 @@
 /*
    includes for all modules the Kernel will include
 */
-// motor control
+// motor modes
 #include "bldc.h"
-#include "svm.h"
-// sampling
-#include "encoder_as5047.h"
-#include "sampler.h"
-// -> adc
+#include "foc.h"
+
+// hardware wrappers
+#include "as5047.h"
+#include "vsens.h"
+
 // communication
 #include "sp.h"
 #include "shell.h"
 #include "streamer.h"
-#include "sampler.h"
 
 Kernel* Kernel::instance;
 
@@ -23,15 +23,17 @@ int Kernel::_loopCount = 0;
 Kernel::Kernel() {
 
   instance = this;
-  /*
-      call constructors on modules
-  */
-  this->bldc = new BLDC(PIN_HI_A, PIN_LO_A, PIN_HI_B, PIN_LO_B, PIN_HI_C, PIN_LO_C);
-  this->svm = new SVM(PIN_HI_A, PIN_LO_A, PIN_HI_B, PIN_LO_B, PIN_HI_C, PIN_LO_C);
-  this->as5047 = new AS5047();
-  this->sampler = new Sampler(PIN_SENSV_A, PIN_SENSV_B, PIN_SENSV_C, PIN_SENSA_A, PIN_SENSA_B, PIN_SENSA_C);
 
-  this->sp = new SP(THE_BAUDRATE);
+  #if IS_BLDC_MACHINE
+  this->bldc = new BLDC();
+  #else if IS_FOC_MACHINE
+  this->foc = new FOC();
+  #endif;
+
+  this->as5047 = new AS5047();
+  this->vsens = new VSens(); // holds ringbuffers for sampl'd adcs
+
+  this->sp = new SP();
   this->shell = new Shell();
   this->streamer = new Streamer();
 }
@@ -41,84 +43,28 @@ void Kernel::init() {
   /*
      call inits on all modules, in proper order, when necessary
   */
-
-  this->sampler->init();
   this->as5047->init();
+  this->vsens->init();
+  
   this->sp->init();
+  this->shell->init();
   this->streamer->init();
+  
+  #if IS_BLDC_MACHINE
   this->bldc->init();
-
-#if GO_ON_STARTUP
-  _Sample_Timer.begin(Kernel::onSampleLoop, 1000000/SAMPLE_DEFAULT_HZ); // as of yet unclear if all of this structure works, w/ complications due to static & non-static members
-  _Sample_T_isRunning = true;
-#else
-  _Sample_T_isRunning = false;
-#endif
-  _Sample_T_hz = SAMPLE_DEFAULT_HZ;
-  _Sample_Timer.priority(126);
-
-#if GO_ON_STARTUP
-  _Machine_Timer.begin(Kernel::onMachineLoop, 1000000/MACHINE_LOOP_DEFAULT_HZ); // TODO: wrap timers, put them in array to make "timers" command simpler
-  _Machine_T_isRunning = true;
-#else
-  _Machine_T_isRunning = false;
-#endif
-  _Machine_T_hz = MACHINE_LOOP_DEFAULT_HZ;
-  _Machine_Timer.priority(127);
-}
-
-void Kernel::onSampleLoop() {
-  KERNEL->as5047->readNow();
-  //KERNEL->sampler->readVNow();
-  //KERNEL->sampler->readANow(); // TODO: this fires only on pwm pin on
-}
-
-void Kernel::onMachineLoop() {
-#if IS_BLDC_MACHINE
-  if (!(_loopCount % MACHINE_LOOP_SECONDARY) && KERNEL->bldc->getInputMode() == BLDC_INPUTMODE_POT) { // search for double -ve !0
-    KERNEL->bldc->pot_input_update(); // update control variables TODO: this check to BLDC object
-    KERNEL->flashLed();
-    KERNEL->bldc->clcommutate();
-  } else {
-    KERNEL->bldc->clcommutate();
-  }
-#else
-#if IS_FOC_MACHINE
-  KERNEL->svm->loop();
-#endif
-#endif
-  _loopCount ++;
+  #else if IS_FOC_MACHINE
+  this->foc->init();
+  #endif
 }
 
 void Kernel::onMainLoop() {
-  this->sp->onMainLoop();
-  // serial check
-  // perhaps interval timer functions should be much shorter
-  // and we do check-based operations here ?
-}
-
-void Kernel::stopSampleTimer() {
-  _Sample_Timer.end();
-  _Sample_T_isRunning = false;
-}
-
-void Kernel::stopMachineTimer() {
-  _Machine_Timer.end();
-  _Machine_T_isRunning = false;
-}
-
-void Kernel::startSampleTimer() {
-  _Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / _Sample_T_hz);
-  _Sample_T_isRunning = true;
-}
-
-void Kernel::startMachineTimer() {
-  _Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / _Machine_T_hz);
-  _Machine_T_isRunning = false;
+  this->sp->onMainLoop(); // serial line-check
+  flashLed();
 }
 
 bool Kernel::findEncoderReverse(int duty) {
   // kill timers & switches
+  /*
   if (_Sample_T_isRunning) {
     this->stopSampleTimer();
   }
@@ -260,14 +206,10 @@ bool Kernel::findEncoderReverse(int duty) {
   // if reverse flip necessary, set reverse, run again
   
   return false;
-}
-
-uint16_t Kernel::findEncoderOffset(int duty) {
-  //
-  return 0;
+  */
 }
 
 void Kernel::flashLed() {
-  digitalWrite(13, !digitalRead(13));
+  digitalWriteFast(13, !digitalRead(13));
 }
 

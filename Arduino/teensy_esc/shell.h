@@ -25,6 +25,7 @@ class Shell{
   public:
 
   Shell();
+  void init();
   void parseCommand(String message);
   // wants to use function pointers ... list of commands, functions
 

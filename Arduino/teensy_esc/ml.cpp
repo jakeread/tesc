@@ -1,6 +1,6 @@
 // single phase of three-phase BLDC
 
-#include "motorleg.h"
+#include "ml.h"
 
 MotorLeg::MotorLeg(int pinHi, int pinLo){
 
@@ -69,3 +69,4 @@ void MotorLeg::kill(){
   analogWrite(_pinHi, 0);
   analogWrite(_pinLo, 0);
 }
+

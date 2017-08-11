@@ -3,9 +3,13 @@
 
 #include "streamer.h"
 #include "bldc.h"
-#include "encoder_as5047.h"
+#include "as5047.h"
 
 Shell::Shell() {
+  // ?
+}
+
+void Shell::init(){
   // ?
 }
 
@@ -152,100 +156,7 @@ void Shell::cmd_streamer(String args[ARGWORDS]) {
 // --------------------------------------------------------------------------- CMD_TIMERS
 
 void Shell::cmd_timers(String args[ARGWORDS]) {
-  if (args[0] == "machine") {                         // MACHINE
-    if (args[1] == "hz") {                            // MACHINE && HZ
-      int hz = args[2].toInt();
-      if (hz) {
-        if (KERNEL->_Machine_T_isRunning) {
-          KERNEL->_Machine_Timer.end();
-          Serial.print("Restarting Machine Timer at HZ: ");
-          Serial.println(hz);
-          KERNEL->_Machine_T_hz = hz;
-          KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / hz);
-        } else {
-          Serial.print("Starting Machine Timer at HZ: ");
-          Serial.println(hz);
-          KERNEL->_Machine_T_hz = hz;
-          KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / hz);
-        }
-      }
-    } else if (args[1] == "stop") {                 // MACHINE && STOP
-      if (KERNEL->_Machine_T_isRunning) {
-        KERNEL->_Machine_Timer.end();
-        KERNEL->bldc->killAllPower();
-        KERNEL->_Machine_T_isRunning = false;
-#if IS_FOC_MACHINE
-#warning NOT IMPLEMENTED
-#endif
-        Serial.println("RIP Machine Timer");
-      } else {
-        Serial.println("Machine Timer already stopped...");
-      }
-    } else if (args[1] == "start") {                // MACHINE && START
-      if (KERNEL->_Machine_T_isRunning) {
-        Serial.println("Machine Timer already started...");
-      } else {
-        KERNEL->_Machine_Timer.begin(Kernel::onMachineLoop, 1000000 / KERNEL->_Machine_T_hz); // TODO: this should be KERNEL->startMachineTimer();
-        KERNEL->_Machine_T_isRunning = true;
-        Serial.print("Starting Machine Timer at HZ: ");
-        Serial.println(KERNEL->_Machine_T_hz);
-      }
-    } else {
-      Serial.print("Machine Timer HZ is: ");
-      Serial.print(KERNEL->_Machine_T_hz);
-      Serial.print(" and is running: ");
-      Serial.println(KERNEL->_Machine_T_isRunning);
-    }
-  } else if (args[0] == "sample") {                  // SAMPLE
-    if (args[1] == "hz") {                           // SAMPLE && HZ
-      int hz = args[2].toInt();
-      if (hz) {
-        if (KERNEL->_Sample_T_isRunning) {
-          KERNEL->_Sample_Timer.end();
-          Serial.print("Restarting Sample Timer at HZ: ");
-          Serial.println(hz);
-          KERNEL->_Sample_T_hz = hz;
-          KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / hz);
-        } else {
-          Serial.print("Starting Sample Timer at HZ: ");
-          Serial.println(hz);
-          KERNEL->_Sample_T_hz = hz;
-          KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / hz);
-        }
-      }
-    } else if (args[1] == "stop") {                 // SAMPLE && STOP
-      if (KERNEL->_Sample_T_isRunning) {
-        KERNEL->_Sample_Timer.end();
-        KERNEL->_Sample_T_isRunning = false;
-        Serial.println("RIP Sample Timer");
-      } else {
-        Serial.println("Sample Timer already stopped...");
-      }
-    } else if (args[1] == "start") {                // SAMPLE && START
-      if (KERNEL->_Sample_T_isRunning) {
-        Serial.println("Sample Timer already started...");
-      } else {
-        KERNEL->_Sample_Timer.begin(Kernel::onSampleLoop, 1000000 / KERNEL->_Sample_T_hz); // TODO: this should be KERNEL->startMachineTimer();
-        KERNEL->_Sample_T_isRunning = true;
-        Serial.print("Starting Sample Timer at HZ: ");
-        Serial.println(KERNEL->_Sample_T_hz);
-      }
-    } else {
-      Serial.print("Sample Timer HZ is: ");
-      Serial.print(KERNEL->_Sample_T_hz);
-      Serial.print(" and is running: ");
-      Serial.println(KERNEL->_Sample_T_isRunning);
-    }
-  } else {
-    Serial.print("Machine Timer Status: ");
-    Serial.print(KERNEL->_Machine_T_isRunning);
-    Serial.print(", HZ: ");
-    Serial.println(KERNEL->_Machine_T_hz);
-    Serial.print("Sample Timer Status: ");
-    Serial.print(KERNEL->_Sample_T_isRunning);
-    Serial.print(", HZ: ");
-    Serial.println(KERNEL->_Sample_T_hz);
-  }
+  
 }
 
 // --------------------------------------------------------------------------- CMD_TR
