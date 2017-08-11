@@ -44,8 +44,10 @@ void loop (){
     #define DEBUG_ADC_VALS
     #ifdef DEBUG_ADC_VALS
     if(!(ctr % 24)){
+      Serial.print("U, adc1: ");
       Serial.print(theADC->RB_SENSA_U.latest());
       Serial.print("\t");
+      Serial.print("V, adc0: ");
       Serial.println(theADC->RB_SENSA_V.latest());
     }
     #endif
@@ -70,20 +72,14 @@ void loop (){
 
 
 void adc0_isr(void){
-  digitalWriteFast(ledPin, on);
   if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    theADC->RB_SENSA_U.push((uint16_t)ADC0_RA); // adc result data register
+    theADC->RB_SENSA_V.push((uint16_t)ADC0_RA); // adc result data register
   }
-  digitalWriteFast(ledPin, off);
 }
 
-unsigned short result;
-
 void adc1_isr(void){ // not an object f'n bc triggered in some depths of teensy core that I don't understand
-  digitalWriteFast(tickPin, on);
   if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    theADC->RB_SENSA_V.push((uint16_t)ADC1_RA); // adc result data register
+    theADC->RB_SENSA_U.push((uint16_t)ADC1_RA); // adc result data register
   }
-  digitalWriteFast(tickPin, off);
 }
 

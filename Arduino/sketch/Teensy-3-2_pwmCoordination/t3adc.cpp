@@ -97,13 +97,13 @@ void T3ADC::init(){
   ADC1_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(0); // not continuous conversion, hardware average enabled, 4 samples
   // ADC1 Interrupt Setup / Triggers
   // interrupt enable and select ADC1_DM1 channel // channel -> pin in chart above (thx pevide)
-  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5
+  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5, 19, V
   // ADC0_CFG2 |= ADC_CFG2_MUXSEL;
-  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(9); // A3
+  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(9); // A3, 17, U
   // enable ADC1, ADC0 alternate trigger select, and select trigger 8 (ftm0)
   SIM_SOPT7 = SIM_SOPT7_ADC1ALTTRGEN | SIM_SOPT7_ADC1TRGSEL(8) | SIM_SOPT7_ADC0ALTTRGEN | SIM_SOPT7_ADC0TRGSEL(8); 
   // Setup ADC1, ADC0 Interrupt
-  NVIC_SET_PRIORITY(IRQ_ADC0, 16);
+  NVIC_SET_PRIORITY(IRQ_ADC0, 8);
   NVIC_ENABLE_IRQ(IRQ_ADC0);
   NVIC_SET_PRIORITY(IRQ_ADC1, 8);
   NVIC_ENABLE_IRQ(IRQ_ADC1);
