@@ -15,6 +15,9 @@ const float TWO_PI_OVER_THREE = 2*PI / 3;
 const float FOUR_PI_OVER_THREE = 4*PI / 3;
 const float FIVE_PI_OVER_THREE = 5*PI / 3;
 
+const float ONE_OVER_SQRT_THREE = 1 / sqrt(3);
+const float TWO_OVER_SQRT_THREE = 2 / sqrt(3);
+
 const double TZ = 2048;
 const float TWO_OVER_THREE_VDC = 26/3;
 const float SIN_PI_OVER_THREE = sin(PI_OVER_THREE);

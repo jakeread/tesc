@@ -83,18 +83,24 @@ T3ADC::T3ADC(){
 void T3ADC::init(){
   this->rbau = new RingBuffer();
   this->rbav = new RingBuffer();
+  
+  adc0_flag = false;
+  adc1_flag = false;
+  
   // ADC1 Init
   SIM_SCGC5 |= SIM_SCGC5_PORTE | SIM_SCGC5_PORTD | SIM_SCGC5_PORTC | SIM_SCGC5_PORTB | SIM_SCGC5_PORTA; // enable port a/b/c/d/e clock
   SIM_SCGC6 |= SIM_SCGC6_ADC0;  // ADC0 turnt on
   SIM_SCGC3 |= SIM_SCGC3_ADC1;  // ADC1 turnt on
-  ADC0_CFG1 |= ADC_CFG1_ADIV(1);
-  ADC1_CFG1 |= ADC_CFG1_ADIV(1); // adc clock is bus clock / 2
+  ADC0_CFG1 = 0x00;
+  ADC1_CFG1 = 0x00;
+  ADC0_CFG1 |= ADC_CFG1_ADIV(1) | ADC_CFG1_MODE(1); // adc clock is bus clock / 2 && resoltuion is 10 bits // https://github.com/PaulStoffregen/cores/blob/master/teensy3/kinetis.h
+  ADC1_CFG1 |= ADC_CFG1_ADIV(1) | ADC_CFG1_MODE(1); 
   ADC0_CFG2 = 0x00; 
   ADC1_CFG2 = 0x00; // nothing to setup here
   ADC0_SC2 |= ADC_SC2_ADTRG | ADC_SC2_REFSEL(0);
   ADC1_SC2 |= ADC_SC2_ADTRG | ADC_SC2_REFSEL(0); // hardware triggered & voltage reference external (3.3v)
-  ADC0_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(0);
-  ADC1_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(0); // not continuous conversion, hardware average enabled, 4 samples
+  ADC0_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(2);
+  ADC1_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(2); // not continuous conversion, hardware average enabled, 4 samples
   // ADC1 Interrupt Setup / Triggers
   // interrupt enable and select ADC1_DM1 channel // channel -> pin in chart above (thx pevide)
   ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5, 19, V
@@ -107,17 +113,21 @@ void T3ADC::init(){
   NVIC_ENABLE_IRQ(IRQ_ADC0);
   NVIC_SET_PRIORITY(IRQ_ADC1, 8);
   NVIC_ENABLE_IRQ(IRQ_ADC1);
+
 }
 
 void adc0_isr(void){
   if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
     KERNEL->foc->t3adc->rbav->push((uint16_t)ADC0_RA); // adc result data register
   }
-  KERNEL->as5047->readNow();
+  KERNEL->foc->t3adc->adc0_flag = true;
+  KERNEL->foc->adcInterruptCheck();
 }
 
 void adc1_isr(void){ // not an object f'n bc triggered in some depths of teensy core that I don't understand
   if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
     KERNEL->foc->t3adc->rbau->push((uint16_t)ADC1_RA); // adc result data register
   }
+  KERNEL->foc->t3adc->adc1_flag = true;
+  KERNEL->foc->adcInterruptCheck();
 }

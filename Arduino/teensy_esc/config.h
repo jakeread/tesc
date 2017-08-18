@@ -66,6 +66,13 @@
 #define PHASE_ADVANCE               1.45 // RADIANS: optimum is 90*, or PI/2, or 1.57
 #define POS_TO_THETA                0.0042197349
 
+// FOC
+
+#define V_REF                       3.3
+#define CURRENT_SHUNT_RES           0.001
+#define CURRENT_AMP_GAIN            50
+#define CURRENT_AMP_OFFSET          8 // observed amp output at 0 current
+
 // BLDC
 
 #define IS_BLDC_MACHINE             0
