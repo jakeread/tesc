@@ -21,7 +21,6 @@ int SP::status() {
 }
 
 void SP::onMainLoop() {
-  KERNEL->flashLed();
   while (Serial.available()) { // read all chars available from 64-byte arduino serial buffer
     _inChar = (char)Serial.read();
     if (_inChar == '\n') {

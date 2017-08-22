@@ -36,7 +36,7 @@ void T3PWM::init() {
   SIM_SCGC6 |= SIM_SCGC6_FTM0;
 
   // Pin Settings
-  PORTC_PCR1 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN0 Pin 22 // u, hi
+  PORTC_PCR1 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN0 Pin 22 // u, hi TODO: confirm? contradicts setPhases command... TODO: confirm PORTC_PCR1 & 2, not PRTC_PCR0 & 1
   PORTC_PCR2 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN1 Pin 23 // u, lo
   PORTD_PCR6 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN6 Pin 21 // v, hi
   PORTD_PCR7 = PORT_PCR_MUX(0x4)  | PORT_PCR_DSE; // FTM0_CHN7 Pin 5  // v, lo
@@ -66,9 +66,9 @@ void T3PWM::init() {
   // Also need to setup the FTM0C0SC channel control register
   FTM0_CNT = 0x0; //FTM Counter Value - reset counter to zero
   FTM0_MOD = (PERIPHERAL_BUS_CLOCK / (1 << FTM0_CLK_PRESCALE)) / FTM0_OVERFLOW_FREQUENCY ; //Set the overflow rate
-  /* 
-   *  = 48MHz / 0(?) / 11718Hz = 4096.2621 ~ 12 bits resolution, 0 - 4096,
-   */
+  /*
+      = 48MHz / 0(?) / 11718Hz = 4096.2621 ~ 12 bits resolution, 0 - 4096,
+  */
   FTM0_CNTIN = 0; //Set the Counter Initial Value to 0
 
   // FTMx_CnSC - contains the channel-interrupt status flag control bits
@@ -112,12 +112,14 @@ void T3PWM::init() {
   FTM0_C7V = FTM0_MOD / 2;
   FTM0_C4V = FTM0_MOD / 2;
   FTM0_C5V = FTM0_MOD / 2;
+  
   /*
-   * DTENx enable deadtime insertion on ch (0: 0 & 1) (1: 2 & 3) (2: 4 & 5) (3: 6 & 7)
-   * SYNCENx enable pwm sync of ch -
-   * COMBINEx combine ch - 
-   * COMPx channels ch - are compliments of one another
-   */
+     DTENx enable deadtime insertion on ch (0: 0 & 1) (1: 2 & 3) (2: 4 & 5) (3: 6 & 7)
+     SYNCENx enable pwm sync of ch -
+     COMBINEx combine ch -
+     COMPx channels ch - are compliments of one another
+  */
+  
   FTM0_COMBINE = FTM_COMBINE_DTEN0 | FTM_COMBINE_SYNCEN0 | FTM_COMBINE_COMBINE0 | FTM_COMBINE_COMP0 |
                  FTM_COMBINE_DTEN3 | FTM_COMBINE_SYNCEN3 | FTM_COMBINE_COMBINE3 | FTM_COMBINE_COMP3 |
                  FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2 | FTM_COMBINE_COMBINE2 | FTM_COMBINE_COMP2;
@@ -139,14 +141,38 @@ void T3PWM::init() {
   // NVIC_ENABLE_IRQ(IRQ_FTM0);
 }
 
+void T3PWM::setupForBLDC(){
+  FTM0_COMBINE = 0x00;
+  FTM0_COMBINE =  FTM_COMBINE_DTEN0 | FTM_COMBINE_SYNCEN0 |
+                  FTM_COMBINE_DTEN3 | FTM_COMBINE_SYNCEN3 |
+                  FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2;
+}
+
+void T3PWM::setupForFOC(){
+  FTM0_COMBINE = 0x00;
+  FTM0_COMBINE = FTM_COMBINE_DTEN0 | FTM_COMBINE_SYNCEN0 | FTM_COMBINE_COMBINE0 | FTM_COMBINE_COMP0 |
+                 FTM_COMBINE_DTEN3 | FTM_COMBINE_SYNCEN3 | FTM_COMBINE_COMBINE3 | FTM_COMBINE_COMP3 |
+                 FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2 | FTM_COMBINE_COMBINE2 | FTM_COMBINE_COMP2;
+}
+
 void T3PWM::setPhases(unsigned short phase_u, unsigned short phase_v, unsigned short phase_w) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
-  unsigned _mod = FTM0_MOD/2; // TODO: re-write MOD as const 4096 -> 
+  unsigned _mod = FTM0_MOD / 2; // TODO: re-write MOD as const 4096 ->
   FTM0_C0V = _mod - phase_u;
-  FTM0_C1V = _mod + phase_u;
+  FTM0_C1V = _mod + phase_u; // TODO: seems like, actually, don't need to set the hi-side. it's setup as complimentary!
   FTM0_C6V = _mod - phase_v;
   FTM0_C7V = _mod + phase_v;
   FTM0_C4V = _mod - phase_w;
   FTM0_C5V = _mod + phase_w;
+  FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
+}
+
+void T3PWM::setPhasesDirect(unsigned short phase_u_lo, unsigned short phase_u_hi, unsigned short phase_v_lo, unsigned short phase_v_hi, unsigned short phase_w_lo, unsigned short phase_w_hi) {
+  FTM0_C0V = phase_u_lo;
+  FTM0_C1V = phase_u_hi;
+  FTM0_C6V = phase_v_lo;
+  FTM0_C7V = phase_v_hi;
+  FTM0_C4V = phase_w_lo;
+  FTM0_C5V = phase_w_hi;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
 }
 

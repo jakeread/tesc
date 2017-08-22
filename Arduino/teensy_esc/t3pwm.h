@@ -4,11 +4,14 @@
 #include <Arduino.h>
 
 class T3PWM {
+  
   public:
-
   T3PWM();
   void init();
-  void setPhases(uint16_t phase_u, uint16_t phase_v, uint16_t phase_w); // TODO: values?
+  void setupForBLDC();
+  void setupForFOC();
+  void setPhases(unsigned short phase_u, unsigned short phase_v, unsigned short phase_w); // TODO: values?
+  void setPhasesDirect(unsigned short phase_u_lo, unsigned short phase_u_hi, unsigned short phase_v_lo, unsigned short phase_v_hi, unsigned short phase_w_lo, unsigned short phase_w_hi);
   void setBrake(uint16_t strength);
   void setPhasesLow();
 
@@ -17,6 +20,7 @@ class T3PWM {
   uint16_t _phase_u; 
   uint16_t _phase_v;
   uint16_t _phase_q;
+  
 };
 
 #endif

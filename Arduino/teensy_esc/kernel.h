@@ -37,6 +37,9 @@ class Kernel{
   void onMainLoop();
   void flashLed();
 
+  void gateEnableOff(); // shuts down DRV8302
+  void gateEnableOn();
+
   bool findEncoderReverse(int duty);
 
   /*

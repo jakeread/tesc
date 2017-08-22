@@ -3,7 +3,7 @@
 #include "constants.h"
 
 SVPWM::SVPWM() {
-  //
+  this->t3pwm = new T3PWM();
 }
 
 void SVPWM::init() {

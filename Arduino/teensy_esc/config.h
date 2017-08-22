@@ -75,11 +75,15 @@
 
 // BLDC
 
-#define IS_BLDC_MACHINE             0
-#define IS_FOC_MACHINE              1
+#define IS_BLDC_MACHINE             1
+#define IS_FOC_MACHINE              0
 
-#define BLDC_INPUTMODE_POT        1
-#define BLDC_INPUTMODE_SHELL      0
+#define BLDC_INPUTMODE_POT          1
+#define BLDC_INPUTMODE_SHELL        0
+
+#define BLDC_DEFAULT_DUTY           1564 // of 4096
+#define BLDC_DEFAULT_DIR            1
+#define BLDC_DEFAULT_HZ             12
 
 #if IS_BLDC_MACHINE && IS_FOC_MACHINE
 #warning WTF

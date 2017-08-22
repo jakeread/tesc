@@ -40,6 +40,7 @@ Kernel::Kernel() {
 
 void Kernel::init() {
   pinMode(13, OUTPUT);
+  pinMode(2, OUTPUT);
   /*
      call inits on all modules, in proper order, when necessary
   */
@@ -59,7 +60,16 @@ void Kernel::init() {
 
 void Kernel::onMainLoop() {
   this->sp->onMainLoop(); // serial line-check
-  flashLed();
+  this->bldc->olcommutate();
+  //this->inputs->pot->printValue();
+}
+
+void Kernel::gateEnableOff(){
+  digitalWriteFast(2, LOW);
+}
+
+void Kernel::gateEnableOn(){
+  digitalWriteFast(2, HIGH);
 }
 
 bool Kernel::findEncoderReverse(int duty) {

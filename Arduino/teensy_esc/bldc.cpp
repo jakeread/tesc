@@ -2,19 +2,15 @@
 #include "bldc.h"
 #include "kernel.h"
 #include "as5047.h"
+#include "t3pwm.h"
 
 BLDC::BLDC() {
 
-  analogWriteResolution(LEG_PWMRES);
-  // 8-bit analog (pwm) write resolution // values 0-255
-  // & maching freq as per https://www.pjrc.com/teensy/td_pulse.html set in motorleg
+  this->t3pwm = new T3PWM();
 
-  MLU = new MotorLeg(PIN_HI_U, PIN_LO_U); // TODO: rename to phases U V M
-  MLV = new MotorLeg(PIN_HI_V, PIN_LO_V);
-  MLW = new MotorLeg(PIN_HI_W, PIN_LO_W);
-
-  _duty = 125;
-  _dir = 1;
+  _duty = BLDC_DEFAULT_DUTY;
+  _dir = BLDC_DEFAULT_DIR;
+  _maxFreq = 1000000;
 
   _comloc = 0;
   _lastcom = micros();
@@ -23,16 +19,24 @@ BLDC::BLDC() {
     _czc[i] = i * (MOTOR_MODULO / 6);
   }
 
+  _phase_u_lo = 0;
+  _phase_u_hi = 0;
+  _phase_v_lo = 0;
+  _phase_v_hi = 0;
+  _phase_w_lo = 0;
+  _phase_w_hi = 0;
+
 }
 
 void BLDC::init() {
+  this->t3pwm->init();
+  this->t3pwm->setupForBLDC();
   _inputMode = BLDC_INPUTMODE_POT;
+  freq(BLDC_DEFAULT_HZ);
+  KERNEL->gateEnableOn();
 }
 
 bool BLDC::killAllPower() {
-  MLU->kill();
-  MLV->kill();
-  MLW->kill();
   return true;
 }
 
@@ -144,7 +148,7 @@ void BLDC::clcommutate() {
       _comCommand = 0;
     }
   }
-  if (_dir == 0) {
+  if (_dir == -1) {
     _comCommand = _comZone - 1;
     if (_comCommand == -1) {
       _comCommand = 5;
@@ -158,13 +162,75 @@ void BLDC::clcommutate() {
   commutate(_comCommand);
 }
 
-void BLDC::commutate(uint8_t comPos) {
+bool BLDC::freq(unsigned int hz) {
+  if (hz > _maxFreq) {
+    _freq  = _maxFreq;
+  } else if (hz == 0) {
+    _freq = 1;
+  } else {
+    _freq = hz;
+  }
+  _period = 1000000 / _freq;
+  return true;
+}
 
+int BLDC::getFreq() {
+  return _freq;
+}
+
+void BLDC::olcommutate() {
+  if (micros() - _lastcom > _period) {
+    //digitalWriteFast(2,LOW);
+    KERNEL->flashLed();
+    //digitalWriteFast(2, HIGH);
+    commutateStep(_dir);
+    _lastcom = micros();
+    Serial.println(analogRead(A14));
+  }
+}
+
+void BLDC::commutateStep(int dir) {
+  _comloc += dir;
+  if (_comloc > 5) {
+    _comloc = 0;
+  } else if (_comloc < 0) {
+    _comloc = 5;
+  }
+  commutate(_comloc); // TODO: as structured, passing to self
+}
+
+void BLDC::commutate(uint8_t comPos) {
   _comloc = comPos % 6;
 
-  MLU->set(_duty, comtable[_comloc][0]);
-  MLV->set(_duty, comtable[_comloc][1]);
-  MLW->set(_duty, comtable[_comloc][2]);
+  // comPhaseTable[3][6][2]
+  // comPhaseTable[comPos][phase][switch]
 
+  _phase_u_lo = _duty * comPhaseTable[0][comPos][0];
+  _phase_u_hi = _duty * comPhaseTable[0][comPos][1];
+  _phase_v_lo = _duty * comPhaseTable[1][comPos][0];
+  _phase_v_hi = _duty * comPhaseTable[1][comPos][1];
+  _phase_w_lo = _duty * comPhaseTable[2][comPos][0];
+  _phase_w_hi = _duty * comPhaseTable[2][comPos][1];
+
+  Serial.print("u_lo\t");
+  Serial.print(_phase_u_lo);
+  Serial.print("\t");
+  Serial.print("u_hi\t");
+  Serial.print(_phase_u_hi);
+  Serial.print("\t");
+  Serial.print("v_lo\t");
+  Serial.print(_phase_v_lo);
+  Serial.print("\t");
+  Serial.print("v_hi\t");
+  Serial.print(_phase_v_hi);
+  Serial.print("\t");
+  Serial.print("w_lo\t");
+  Serial.print(_phase_w_lo);
+  Serial.print("\t");
+  Serial.print("w_hi\t");
+  Serial.print(_phase_w_hi);
+  Serial.print("\t");
+
+  this->t3pwm->setPhasesDirect(_phase_u_lo, _phase_u_hi, _phase_v_lo, _phase_v_hi, _phase_w_lo, _phase_w_hi);
 }
 
