@@ -10,15 +10,18 @@ FOCT implements 'all the bells and whistles' found in high-end robotics motor co
 FOCT is in development! So is it's documentation!
 
 ## The Hardware  
-FOCT uses a Teensy 3.2 to control Three H-Bridges, which each drive one phase of a three-phase brushless motor. The H-Bridge gates are driven with a DRV8302, a wunderkid IC that is also home to a 5V Buck Converter (for your peripheral needs) and two differential Op-Amps, used to measure phase current. The board also has simple voltage-dividers connected to Teensy ADCs for measuring phase voltage, and includes an SPI out connector used to interface with an AS5047 encoder for absolute position sensing. For now, input is done over Teensy's blazing-fast serial port.
-
+FOCT uses a Teensy 3.2 to control Three H-Bridges, which each drive one phase of a three-phase brushless motor. The H-Bridge gates are driven with a DRV8302, a wunderkid IC that is also home to a 5V Buck Converter (for your peripheral needs) and two differential Op-Amps, used to measure phase current. The board also has simple voltage-dividers connected to Teensy ADCs for measuring phase voltage, and includes an SPI out connector used to interface with an AS5047 encoder for absolute position sensing. For now, input is done over Teensy's blazing-fast serial port.  
+  
+Up to ~24v supply  
+Up to 30A without a heatsink, 42 with good cooling, peaks of 60  
+Planned PWM in, SPI slave modes for control. Serial over USB Config / testing.  
 
 ![FOCT v0.2 Hardware](https://raw.githubusercontent.com/jakeread/tesc/master/Documentation/foct-board-v0-2.png)
 
 ![FOCT v0.3 Schematic](https://raw.githubusercontent.com/jakeread/tesc/master/Documentation/foct-schematic-v0-3.png)
 
 ## The Software
-FOCT runs on Arduino!
+FOCT runs on Arduino! It uses Teensy's built interval timers to handle fast-loop-insurance, and only occasionally reaches into the chip's registers to make PWM work properly. Code will be well commented, I hope / promise...
 
 ## How it Works: Closed-Loop BLDC Control
 // 6-step commutation w/ position reference
