@@ -1,7 +1,7 @@
 # FOCT v0.3
 ### Field Oriented Control on a Teensy 3.2
 
-[FOCT v0.2 Hardware](https://github/com/jakeread/tesc/Documentation/foct-board-v0-2.png)
+[FOCT v0.2 Hardware](https://github/com/jakeread/tesc/master/Documentation/foct-board-v0-2.png)
 
 ## Briefly
 FOCT does closed-loop control of brushless dc (BLDC) motors: the type normally found in RC Cars, Airplanes, Drones etc. These motors are incredibly power-dense, making them an excellent candidate for Robotics applications. However, it's very difficult to control them at low speeds, and control them reliably at high speeds.  
