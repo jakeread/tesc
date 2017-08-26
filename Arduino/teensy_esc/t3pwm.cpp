@@ -156,13 +156,13 @@ void T3PWM::setupForFOC(){
 }
 
 void T3PWM::setPhases(unsigned short phase_u, unsigned short phase_v, unsigned short phase_w) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
-  unsigned _mod = FTM0_MOD / 2; // TODO: re-write MOD as const 4096 ->
-  FTM0_C0V = _mod - phase_u;
-  FTM0_C1V = _mod + phase_u; // TODO: seems like, actually, don't need to set the hi-side. it's setup as complimentary!
-  FTM0_C6V = _mod - phase_v;
-  FTM0_C7V = _mod + phase_v;
-  FTM0_C4V = _mod - phase_w;
-  FTM0_C5V = _mod + phase_w;
+  // STR8 TO COUNTERS, 0 -> 4096, 2048 being midpoint, '0', wherein phase is 'hi' for half, 'lo' for half, and if all are 0 we have only two zero-vectors in SVPWM space
+  FTM0_C0V = phase_u;
+  //FTM0_C1V = phase_u; // TODO: seems like, actually, don't need to set the hi-side. it's setup as complimentary!
+  FTM0_C6V = phase_v;
+  //FTM0_C7V = phase_v;
+  FTM0_C4V = phase_w;
+  //FTM0_C5V = phase_w;
   FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
 }
 

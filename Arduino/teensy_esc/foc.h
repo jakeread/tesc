@@ -5,6 +5,7 @@
 #include "svpwm.h"
 #include "t3adc.h"
 #include "rbf.h"
+#include "rb.h"
 #include "constants.h"
 #include "config.h"
 
@@ -13,6 +14,7 @@ class FOC {
     FOC();
 
     void init();
+    void onMainLoop();    
 
     IntervalTimer* timer;
 
@@ -20,23 +22,27 @@ class FOC {
     T3ADC* t3adc;
 
     // current sensing
-    void adcInterruptCheck();
     RingBufferFloat* rbfau;
     RingBufferFloat* rbfav;
     RingBufferFloat* rbfaw;
 
-    static void onLoop();    
     static volatile long _loopCount;
     static volatile float _p;
     
     void doClarke();
 
   private:
+    uint16_t _riv;
+    uint16_t _riw;
+    
     float _iu;
     float _iv;
+    float _iw;
 
     float _ia;
     float _ib;
+
+    int _lastLoops;
 
 };
 

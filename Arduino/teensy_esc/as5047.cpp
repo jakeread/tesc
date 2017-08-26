@@ -1,12 +1,17 @@
 // Does SPI Footwork, averaging
 
+#include "kernel.h"
 #include "as5047.h"
+#include "rb.h"
 
 AS5047::AS5047(){
   // cnstructor
 }
 
 void AS5047::init(){
+
+  ringbuffer = new RingBuffer();
+  timer = new IntervalTimer();
   
   SPI_AS5047.begin_MASTER(ALT_SCK, ALT_MOSI, ALT_MISO, CS1, CS_ActiveLOW);
   SPI_AS5047.setCTAR(CTAR_0, 16, SPI_MODE1, LSB_FIRST, SPI_CLOCK_DIV8); // DIV2 is no-go
@@ -20,9 +25,13 @@ void AS5047::init(){
   _avgSumFloat = 0;
   _avgSumInt = 0;
 
-  _encoderOffset = AS5047_OFFSET;
-  _encoderReverse = AS5047_REV;
-  
+  #if IS_BLDC_MACHINE
+  _encoderOffset = AS5047_OFFSET_BLDC;
+  _encoderReverse = AS5047_REV_BLDC;
+  #else if IS_FOC_MACHINE
+  _encoderOffset = AS5047_OFFSET_FOC;
+  _encoderReverse = AS5047_REV_FOC;
+  #endif
 }
 
 void AS5047::readNow(){
@@ -57,9 +66,9 @@ void AS5047::readNow(){
   */
   
   if(_encoderReverse){
-    Readings.push(AS5047_RESOLUTION - _reading);
+    ringbuffer->push(AS5047_RESOLUTION - _reading);
   } else {
-    Readings.push(_reading);
+    ringbuffer->push(_reading);
   }
 }
 
@@ -72,37 +81,34 @@ float AS5047::filtered(){
   
   noInterrupts();
   for(int i = 0; i < AS5047_AVERAGING; i++){
-    _avgSumFloat += Readings.get(-i);
+    _avgSumFloat += ringbuffer->get(-i);
   }
   interrupts();
   
-  _filtered = _avgSumFloat / AS5047_AVERAGING;
+  _filtered = _avgSumFloat / AS5047_AVERAGING + _encoderOffset;
 
-  _offset = _filtered + _encoderOffset;
-  if(_offset > AS5047_RESOLUTION){
-    _offsetInt -= MOTOR_MODULO;
+  if(_filtered > AS5047_RESOLUTION){
+    _filtered -= MOTOR_MODULO;
   }
-  return _offset;
+  return _filtered;
 }
 
-uint32_t AS5047::filteredInt(){
+uint32_t AS5047::filteredInt(){ // ~10us faster than float, above -> if you're going to do some conversions anyways *shrugman* use this
   _avgSumInt = 0;
   
   noInterrupts();
   for(int i = 0; i < AS5047_AVERAGING; i++){
-    _avgSumInt += Readings.get(-i);
+    _avgSumInt += ringbuffer->get(-i);
   }
   interrupts();
 
-  _filteredInt = _avgSumInt / AS5047_AVERAGING;
-  
-  _offsetInt = _filteredInt + _encoderOffset;
-  
-  if(_offsetInt > AS5047_RESOLUTION){
-    _offsetInt -= MOTOR_MODULO;
+  _filteredInt = _avgSumInt / AS5047_AVERAGING + _encoderOffset;
+    
+  if(_filteredInt > AS5047_RESOLUTION){
+    _filteredInt -= MOTOR_MODULO;
   }
   
-  return _offsetInt;
+  return _filteredInt;
 }
 
 bool AS5047::setEncoderOffset(uint16_t newOffset){
@@ -125,5 +131,20 @@ bool AS5047::setEncoderReverse(bool trueFalse){
 
 bool AS5047::getEncoderReverse(){
   return _encoderReverse;
+}
+
+void TIMER_HOOK_AS5047(){ // static unfuckery TODO
+  KERNEL->as5047->readNow();
+}
+
+void AS5047::startSampling(){
+  if(AS5047_SAMPLE_RATE){ // not-zero
+    _usBetweenSamples = 1000000 / AS5047_SAMPLE_RATE;
+  }
+  timer->begin(TIMER_HOOK_AS5047, _usBetweenSamples);
+}
+
+void AS5047::stopSampling(){
+  timer->end();
 }
 

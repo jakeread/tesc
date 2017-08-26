@@ -8,6 +8,7 @@ SVPWM::SVPWM() {
 
 void SVPWM::init() {
   this->t3pwm->init();
+  this->t3pwm->setupForFOC();
 }
 
 /*

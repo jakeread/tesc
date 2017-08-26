@@ -248,7 +248,7 @@ void Shell::cmd_encoder(String args[ARGWORDS]) {
       }
     } else if (args[1] == "find") {                           // REVERSE -> FIND
       Serial.println("testing for encoder reverse...");
-      bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
+      bool result = KERNEL->encoderValueSearch(ENCODER_SEARCH_DEFAULT_DUTY);
       Serial.print("Result: ");
       Serial.println(result);
     } else {
@@ -257,7 +257,7 @@ void Shell::cmd_encoder(String args[ARGWORDS]) {
     }
   } else if (args[0] == "search") {
     Serial.println("testing for encoder settings...");
-    bool result = KERNEL->findEncoderReverse(ENCODER_SEARCH_DEFAULT_DUTY);
+    bool result = KERNEL->encoderValueSearch(ENCODER_SEARCH_DEFAULT_DUTY);
     Serial.print("Result: ");
     Serial.println(result);
   } else if (args[0] == "print" && args[1] == "comzones") {

@@ -1,6 +1,7 @@
 // does straightforward BLDC commutation
 #include "bldc.h"
 #include "kernel.h"
+#include "rb.h"
 #include "as5047.h"
 #include "t3pwm.h"
 
@@ -10,7 +11,6 @@ BLDC::BLDC() {
 
   _duty = BLDC_DEFAULT_DUTY;
   _dir = BLDC_DEFAULT_DIR;
-  _maxFreq = 1000000;
 
   _comloc = 0;
   _lastcom = micros();
@@ -31,12 +31,25 @@ BLDC::BLDC() {
 void BLDC::init() {
   this->t3pwm->init();
   this->t3pwm->setupForBLDC();
+  KERNEL->as5047->startSampling();
   _inputMode = BLDC_INPUTMODE_POT;
   freq(BLDC_DEFAULT_HZ);
   KERNEL->gateEnableOn();
+  _ctr = 0;
+}
+
+void BLDC::onMainLoop(){
+  clcommutate();
 }
 
 bool BLDC::killAllPower() {
+  KERNEL->gateEnableOff();
+  this->t3pwm->setPhasesLow();
+  return true;
+}
+
+bool BLDC::wakeUp(){
+  KERNEL->gateEnableOn();
   return true;
 }
 
@@ -52,10 +65,11 @@ void BLDC::prntCzc() {
 }
 
 bool BLDC::duty(int duty) {
-  if (duty > 0 && duty < 256) {
+  if (duty > 0 && duty < 4096) {
     _duty = duty;
     return true;
   } else {
+    KERNEL->gateEnableOff();
     return false;
   }
 }
@@ -86,19 +100,6 @@ bool BLDC::setInputMode(int mode) {
   }
 }
 
-void BLDC::pot_input_update() {
-  _dutyUser = analogRead(DEBUG_POT_PIN);
-  if (_dutyUser < 512) {
-    this->dir(0);
-    this->duty(map(_dutyUser, 512, 0, 110, 255));
-  } else if (_dutyUser >= 512) {
-    this->dir(1);
-    this->duty(map(_dutyUser, 512, 1024, 110, 255));
-  } else {
-    this->duty(0);
-  }
-}
-
 void BLDC::clcommutate() {
   /*
      OK: Have a Duty-Cycle (eventually Torque) setting, and a direction setting
@@ -106,6 +107,14 @@ void BLDC::clcommutate() {
      Check comm table / simple math: where are we in comm table? encoder resolution / poles % 6 ?
      Set PWM's according
   */
+
+  if(_ctr % 500){
+    _ctr ++;
+  } else {
+    _ctr = 0;
+    KERNEL->flashLed();
+    duty(map(KERNEL->simpleInput(), 0, 1024, 1, 2096));
+  }
 
   /*
      Do Modulo: for splitting Encoder (0-AS5047_RESOLUTION Physical Period, into 0-BLDC_MODULO Electrical Period)
@@ -163,8 +172,8 @@ void BLDC::clcommutate() {
 }
 
 bool BLDC::freq(unsigned int hz) {
-  if (hz > _maxFreq) {
-    _freq  = _maxFreq;
+  if (hz > BLDC_MAX_OL_FREQ) {
+    _freq  = BLDC_MAX_OL_FREQ;
   } else if (hz == 0) {
     _freq = 1;
   } else {
@@ -180,12 +189,16 @@ int BLDC::getFreq() {
 
 void BLDC::olcommutate() {
   if (micros() - _lastcom > _period) {
-    //digitalWriteFast(2,LOW);
-    KERNEL->flashLed();
-    //digitalWriteFast(2, HIGH);
-    commutateStep(_dir);
+    if (analogRead(A14) < 1000) {
+      KERNEL->gateEnableOff();
+      KERNEL->flashLed();
+    } else {
+      KERNEL->gateEnableOn();
+      commutateStep(_dir);
+    }
+    freq(map(KERNEL->simpleInput(), 0, 1024, 3, BLDC_MAX_OL_FREQ));
+    //Serial.println(_period);
     _lastcom = micros();
-    Serial.println(analogRead(A14));
   }
 }
 
@@ -203,7 +216,7 @@ void BLDC::commutate(uint8_t comPos) {
   _comloc = comPos % 6;
 
   // comPhaseTable[3][6][2]
-  // comPhaseTable[comPos][phase][switch]
+  // comPhaseTable[phase][comPos][switch]
 
   _phase_u_lo = _duty * comPhaseTable[0][comPos][0];
   _phase_u_hi = _duty * comPhaseTable[0][comPos][1];
@@ -211,25 +224,6 @@ void BLDC::commutate(uint8_t comPos) {
   _phase_v_hi = _duty * comPhaseTable[1][comPos][1];
   _phase_w_lo = _duty * comPhaseTable[2][comPos][0];
   _phase_w_hi = _duty * comPhaseTable[2][comPos][1];
-
-  Serial.print("u_lo\t");
-  Serial.print(_phase_u_lo);
-  Serial.print("\t");
-  Serial.print("u_hi\t");
-  Serial.print(_phase_u_hi);
-  Serial.print("\t");
-  Serial.print("v_lo\t");
-  Serial.print(_phase_v_lo);
-  Serial.print("\t");
-  Serial.print("v_hi\t");
-  Serial.print(_phase_v_hi);
-  Serial.print("\t");
-  Serial.print("w_lo\t");
-  Serial.print(_phase_w_lo);
-  Serial.print("\t");
-  Serial.print("w_hi\t");
-  Serial.print(_phase_w_hi);
-  Serial.print("\t");
 
   this->t3pwm->setPhasesDirect(_phase_u_lo, _phase_u_hi, _phase_v_lo, _phase_v_hi, _phase_w_lo, _phase_w_hi);
 }

@@ -3,8 +3,9 @@
 
 #include <Arduino.h>
 #include "t3spi.h"
-#include "rb.h"
 #include "config.h"
+
+class RingBuffer;
 
 class AS5047 {
 
@@ -25,7 +26,11 @@ class AS5047 {
   bool setEncoderReverse(bool trueFalse);
   bool getEncoderReverse();
 
-  RingBuffer Readings;
+  RingBuffer* ringbuffer;
+  IntervalTimer* timer;
+
+  void startSampling();
+  void stopSampling();
 
   private:
   volatile float _filtered; // TODO: check all of these & as well as their read / writes are all interrupt safe :|
@@ -37,16 +42,18 @@ class AS5047 {
   volatile uint16_t _pardBitRx;
   volatile uint16_t _errBit;
 
-  uint16_t          _encoderOffset;
-  bool              _encoderReverse;
-
   volatile uint16_t readWord;
   volatile uint16_t noOpWord;
   volatile uint16_t readWords[2] = {};
   volatile uint16_t returnWords[2] = {};
 
+  uint16_t          _encoderOffset;
+  bool              _encoderReverse;
+
   float _avgSumFloat;
   uint32_t _avgSumInt;
+
+  int _usBetweenSamples;
 };
 
 #endif

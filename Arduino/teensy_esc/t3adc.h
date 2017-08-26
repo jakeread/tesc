@@ -13,8 +13,8 @@ class T3ADC {
 
   void init();
 
-  RingBuffer* rbau; // holdin on' to raw adc values from these pins
-  RingBuffer* rbav;
+  RingBuffer* rbav; // holdin on' to raw adc values from these pins
+  RingBuffer* rbaw;
   
   bool adc0_flag;
   bool adc1_flag;

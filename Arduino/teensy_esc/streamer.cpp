@@ -67,10 +67,10 @@ void Streamer::streamVarsVoltages(){
 void Streamer::streamVarsCurrents(){
   Serial.print("#");
   Serial.print(millis());
-  Serial.print(" au:");
-  Serial.print(KERNEL->foc->t3adc->rbau->latest());
   Serial.print(" av:");
   Serial.print(KERNEL->foc->t3adc->rbav->latest());
+  Serial.print(" aw:");
+  Serial.print(KERNEL->foc->t3adc->rbaw->latest());
   Serial.println("");
 }
 

@@ -39,8 +39,9 @@ Kernel::Kernel() {
 }
 
 void Kernel::init() {
+
   pinMode(13, OUTPUT);
-  pinMode(2, OUTPUT);
+  pinMode(2, OUTPUT); // gate enable
   /*
      call inits on all modules, in proper order, when necessary
   */
@@ -56,12 +57,16 @@ void Kernel::init() {
   #else if IS_FOC_MACHINE
   this->foc->init();
   #endif
+
 }
 
 void Kernel::onMainLoop() {
   this->sp->onMainLoop(); // serial line-check
-  this->bldc->olcommutate();
-  //this->inputs->pot->printValue();
+  #if IS_FOC_MACHINE
+  this->foc->onMainLoop();
+  #else if IS_BLDC_MACHINE
+  this->bldc->onMainLoop();
+  #endif
 }
 
 void Kernel::gateEnableOff(){
@@ -72,15 +77,16 @@ void Kernel::gateEnableOn(){
   digitalWriteFast(2, HIGH);
 }
 
-bool Kernel::findEncoderReverse(int duty) {
+void Kernel::flashLed() {
+  digitalWriteFast(13, !digitalRead(13));
+}
+
+int Kernel::simpleInput(){
+  return analogRead(A11); // WARNING this crashes system when ADC's for FOC are initiated 
+}
+
+bool Kernel::encoderValueSearch(int duty) {
   // kill timers & switches
-  /*
-  if (_Sample_T_isRunning) {
-    this->stopSampleTimer();
-  }
-  if (_Machine_T_isRunning) {
-    this->stopMachineTimer();
-  }
   this->bldc->killAllPower();
 
   // set offsets & reverse to 0
@@ -91,6 +97,7 @@ bool Kernel::findEncoderReverse(int duty) {
   int com = 0;
 
   this->bldc->duty(duty);
+  this->bldc->wakeUp();
 
   for (int i = 0; i < ENCODER_REVSEARCH_MULTIPLE; i ++) {
     com = i % 6;
@@ -216,10 +223,6 @@ bool Kernel::findEncoderReverse(int duty) {
   // if reverse flip necessary, set reverse, run again
   
   return false;
-  */
 }
 
-void Kernel::flashLed() {
-  digitalWriteFast(13, !digitalRead(13));
-}
 

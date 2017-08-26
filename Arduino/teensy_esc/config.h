@@ -29,24 +29,28 @@
 
 // ENCODER SETUPS
 
+#define AS5047_SAMPLE_RATE          20000
+
 #define AS5047_RESOLUTION           16384 
 #define AS5047_SAMPLES              256             // keep lots of these around so that we can do filtering, derivatives
 #define AS5047_AVERAGING            4
 
 #define RBUF_LENGTH                 256
 
-#define AS5047_OFFSET               1766           // but ~ 1700 seems better -> this is roughly one 'com zone' away
-#define AS5047_REV                  FALSE          // set TRUE to reverse values, 0 to retain original // MT4108 = TRUE // MT5208 = FALSE
+#define AS5047_OFFSET_BLDC          364           // but ~ 1700 seems better -> this is roughly one 'com zone' away
+#define AS5047_OFFSET_FOC           535
+#define AS5047_REV_BLDC             TRUE          // set TRUE to reverse values, 0 to retain original // MT4108 = TRUE // MT5208 = FALSE
+#define AS5047_REV_FOC              FALSE
 
 #define ENCODER_REVSEARCH_NUM       5
 #define ENCODER_REVSEARCH_MULTIPLE  25 // _NUM * 6 ... TODO: evaluations in #defines?
 #define ENCODER_REVSEARCH_LESS      24
-#define ENCODER_SEARCH_DEFAULT_DUTY 210
+#define ENCODER_SEARCH_DEFAULT_DUTY 1024
 
 // MOTOR SPECIFIC
 
-#define MOTOR_POLEPAIRS             11 // MT5208 = 7 // MT4108 = 11
-#define MOTOR_MODULO                2340 // AS5047_RESOLUTION / MOTOR_POLEPAIRS // // MT4108 = 1489 || MT5208 = 2340 = resolution / poles / 2
+#define MOTOR_POLEPAIRS             11    // MT5208 = 7 // MT4108 = 11
+#define MOTOR_MODULO                1489  // AS5047_RESOLUTION / MOTOR_POLEPAIRS // // MT4108 = 1489 || MT5208 = 2340 = resolution / poles / 2
 
 // DRIVER
 
@@ -58,7 +62,7 @@
 // LOOP SPEEDS
 
 #define MACHINE_LOOP_DEFAULT_HZ     8000
-#define MACHINE_LOOP_SECONDARY      500      // so we get 1000hz & 25000hz w/ one timer
+#define MACHINE_LOOP_SECONDARY      2000
 #define SAMPLE_DEFAULT_HZ           10000
 
 // SVM
@@ -68,22 +72,25 @@
 
 // FOC
 
-#define V_REF                       3.3
-#define CURRENT_SHUNT_RES           0.001
-#define CURRENT_AMP_GAIN            50
-#define CURRENT_AMP_OFFSET          8 // observed amp output at 0 current
+#define V_REF                       1.65 // half of VREF from Teensy, see DRV8302 datasheet, REF pin
+#define CURRENT_SHUNT_RES           0.002
+#define CURRENT_AMP_GAIN            40
+#define CURRENT_AMP_OFFSET_V        2048 // observed amp output at 0 current, in raw adc num
+#define CURRENT_AMP_OFFSET_W        2048
 
 // BLDC
 
-#define IS_BLDC_MACHINE             1
-#define IS_FOC_MACHINE              0
+#define IS_BLDC_MACHINE             0
+#define IS_FOC_MACHINE              1
+
+#define BLDC_MAX_OL_FREQ            10000
 
 #define BLDC_INPUTMODE_POT          1
 #define BLDC_INPUTMODE_SHELL        0
 
-#define BLDC_DEFAULT_DUTY           1564 // of 4096
+#define BLDC_DEFAULT_DUTY           1500 // of 4096
 #define BLDC_DEFAULT_DIR            1
-#define BLDC_DEFAULT_HZ             12
+#define BLDC_DEFAULT_HZ             124
 
 #if IS_BLDC_MACHINE && IS_FOC_MACHINE
 #warning WTF

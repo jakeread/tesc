@@ -40,7 +40,9 @@ class Kernel{
   void gateEnableOff(); // shuts down DRV8302
   void gateEnableOn();
 
-  bool findEncoderReverse(int duty);
+  int simpleInput();
+
+  bool encoderValueSearch(int duty);
 
   /*
    * pointers to modules

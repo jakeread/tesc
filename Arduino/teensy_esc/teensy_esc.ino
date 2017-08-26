@@ -17,7 +17,8 @@ void loop() {
  * whenever other timers' functions and follow-throughs are finished
  */ 
   KERNEL->onMainLoop(); 
-  // TODO: on teensy, large amounts of data become available very fast -> to re-write serial such that other interrupts don't get blocked when, say, 256 bytes show up at once!
+  // TODO: on teensy, large amounts of data become available very fast -> to re-write serial such that other interrupts don't get blocked when, 
+  // say, 256 bytes show up at once! and while(Serial.available()) returns true many times in a row
 }
 
 

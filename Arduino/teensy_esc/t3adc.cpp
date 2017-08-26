@@ -81,8 +81,8 @@ T3ADC::T3ADC(){
 }
 
 void T3ADC::init(){
-  this->rbau = new RingBuffer();
   this->rbav = new RingBuffer();
+  this->rbaw = new RingBuffer();
   
   adc0_flag = false;
   adc1_flag = false;
@@ -118,16 +118,12 @@ void T3ADC::init(){
 
 void adc0_isr(void){
   if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    KERNEL->foc->t3adc->rbav->push((uint16_t)ADC0_RA); // adc result data register
+    KERNEL->foc->t3adc->rbaw->push((uint16_t)ADC0_RA); // adc result data register
   }
-  KERNEL->foc->t3adc->adc0_flag = true;
-  KERNEL->foc->adcInterruptCheck();
 }
 
 void adc1_isr(void){ // not an object f'n bc triggered in some depths of teensy core that I don't understand
   if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    KERNEL->foc->t3adc->rbau->push((uint16_t)ADC1_RA); // adc result data register
+    KERNEL->foc->t3adc->rbav->push((uint16_t)ADC1_RA); // adc result data register
   }
-  KERNEL->foc->t3adc->adc1_flag = true;
-  KERNEL->foc->adcInterruptCheck();
 }

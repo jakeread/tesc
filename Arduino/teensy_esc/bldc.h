@@ -15,6 +15,7 @@ class BLDC {
     T3PWM* t3pwm;
 
     void init();          // starts timers
+    void onMainLoop();    // run, run, as fast as you can!
 
     bool duty(int duty);  // set rms pwm val
     int getDuty();
@@ -38,6 +39,7 @@ class BLDC {
     bool setInputMode(int mode);
 
     bool killAllPower();
+    bool wakeUp();
 
     void prntCzc();
 
@@ -46,6 +48,8 @@ class BLDC {
     // vars for update fc'n
     uint16_t _dutyUser;
     uint16_t _dutyDished;
+
+    uint16_t _ctr;
 
     int _duty;
     int _dir; // -1 or 1
