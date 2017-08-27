@@ -38,9 +38,9 @@
 #define RBUF_LENGTH                 256
 
 #define AS5047_OFFSET_BLDC          364           // but ~ 1700 seems better -> this is roughly one 'com zone' away
-#define AS5047_OFFSET_FOC           535
+#define AS5047_OFFSET_FOC           999
 #define AS5047_REV_BLDC             TRUE          // set TRUE to reverse values, 0 to retain original // MT4108 = TRUE // MT5208 = FALSE
-#define AS5047_REV_FOC              FALSE
+#define AS5047_REV_FOC              TRUE
 
 #define ENCODER_REVSEARCH_NUM       5
 #define ENCODER_REVSEARCH_MULTIPLE  25 // _NUM * 6 ... TODO: evaluations in #defines?
@@ -62,7 +62,7 @@
 // LOOP SPEEDS
 
 #define MACHINE_LOOP_DEFAULT_HZ     8000
-#define MACHINE_LOOP_SECONDARY      2000
+#define MACHINE_LOOP_SECONDARY      100
 #define SAMPLE_DEFAULT_HZ           10000
 
 // SVM
@@ -72,7 +72,8 @@
 
 // FOC
 
-#define V_REF                       1.65 // half of VREF from Teensy, see DRV8302 datasheet, REF pin
+#define V_REF                       1.65f // half of VREF from Teensy, see DRV8302 datasheet, REF pin
+#define V_BUS                       12.0f
 #define CURRENT_SHUNT_RES           0.002
 #define CURRENT_AMP_GAIN            40
 #define CURRENT_AMP_OFFSET_V        2048 // observed amp output at 0 current, in raw adc num

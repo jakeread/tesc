@@ -24,8 +24,9 @@ uint32_t FTM0_OVERFLOW_FREQUENCY = 11718; // PWM frequency in Hz
 uint8_t FTM0_DEADTIME_DTVAL = 2; // DeadTime, in clk cycles (unconfirmed)
 
 // don't need dis?
-const uint16_t MAX_DUTY_CYCLE = PERIPHERAL_BUS_CLOCK / FTM0_OVERFLOW_FREQUENCY;   // Maximum duty cycle value.
+const uint16_t MAX_DUTY_CYCLE = PERIPHERAL_BUS_CLOCK / FTM0_OVERFLOW_FREQUENCY;   // Maximum duty cycle value = 4096
 const uint16_t MIN_DUTY_CYCLE = 0;      // Minimum duty cycle value.
+const uint16_t FTM0_MODULO = MAX_DUTY_CYCLE / 2;
 
 T3PWM::T3PWM() {
   // save it for init
@@ -155,15 +156,16 @@ void T3PWM::setupForFOC(){
                  FTM_COMBINE_DTEN2 | FTM_COMBINE_SYNCEN2 | FTM_COMBINE_COMBINE2 | FTM_COMBINE_COMP2;
 }
 
+const short FTM0_MIDPOINT = 2048;
+
 void T3PWM::setPhases(unsigned short phase_u, unsigned short phase_v, unsigned short phase_w) { // uint16_t's ? 0 - 2048 -> shouldn't you just have to write to one ch, as other is compliment?
-  // STR8 TO COUNTERS, 0 -> 4096, 2048 being midpoint, '0', wherein phase is 'hi' for half, 'lo' for half, and if all are 0 we have only two zero-vectors in SVPWM space
-  FTM0_C0V = phase_u;
-  //FTM0_C1V = phase_u; // TODO: seems like, actually, don't need to set the hi-side. it's setup as complimentary!
-  FTM0_C6V = phase_v;
-  //FTM0_C7V = phase_v;
-  FTM0_C4V = phase_w;
-  //FTM0_C5V = phase_w;
-  FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK; // enables the loading of MOD, CTIN and CV registers
+  FTM0_C0V = FTM0_MIDPOINT - phase_u; // 0    -> 2048     1024 midpoint
+  FTM0_C1V = FTM0_MIDPOINT + phase_u; // 2048 -> 4096     3072 midpoint
+  FTM0_C6V = FTM0_MIDPOINT - phase_v;
+  FTM0_C7V = FTM0_MIDPOINT + phase_v; 
+  FTM0_C4V = FTM0_MIDPOINT - phase_w;
+  FTM0_C5V = FTM0_MIDPOINT + phase_w; 
+  FTM0_PWMLOAD |= FTM_PWMLOAD_LDOK;   // enables the loading of MOD, CTIN and CV registers
 }
 
 void T3PWM::setPhasesDirect(unsigned short phase_u_lo, unsigned short phase_u_hi, unsigned short phase_v_lo, unsigned short phase_v_hi, unsigned short phase_w_lo, unsigned short phase_w_hi) {

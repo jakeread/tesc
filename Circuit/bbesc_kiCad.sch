@@ -214,7 +214,7 @@ F 3 "" H 10900 1300 50  0001 C CNN
 	1    10900 1300
 	1    0    0    -1  
 $EndComp
-Text GLabel 1650 7100 0    60   Input ~ 0
+Text GLabel 3250 6300 2    60   Input ~ 0
 3v3
 $Comp
 L CONN_01X06 J2
@@ -270,13 +270,13 @@ Text GLabel 2900 3750 2    60   Input ~ 0
 3v3
 Text GLabel 2900 4050 2    60   Input ~ 0
 SCK2
-Text GLabel 3350 6400 2    60   Input ~ 0
+Text GLabel 1550 7000 0    60   Input ~ 0
 MISO2
-Text GLabel 3350 6500 2    60   Input ~ 0
+Text GLabel 1550 6900 0    60   Input ~ 0
 MOSI2
-Text GLabel 2350 6100 0    60   Input ~ 0
+Text GLabel 2550 7300 2    60   Input ~ 0
 SCK2
-Text GLabel 3350 6300 2    60   Input ~ 0
+Text GLabel 1550 7100 0    60   Input ~ 0
 CS2
 $Comp
 L VCC #PWR05
@@ -302,35 +302,35 @@ F 3 "" H 11450 3350 50  0001 C CNN
 $EndComp
 Text GLabel 4900 6350 2    60   Input ~ 0
 CS1
-Text GLabel 2350 6000 0    60   Input ~ 0
+Text GLabel 2550 7400 2    60   Input ~ 0
 SCK1
-NoConn ~ 3350 7100
-NoConn ~ 3350 7200
-NoConn ~ 3050 5350
-NoConn ~ 2950 5350
-NoConn ~ 2850 5350
-NoConn ~ 2750 5350
+NoConn ~ 1550 6300
+NoConn ~ 1550 6200
+NoConn ~ 1850 8050
+NoConn ~ 1950 8050
+NoConn ~ 2050 8050
+NoConn ~ 2150 8050
 $Comp
 L teensy_3-2 U2
 U 1 1 5915548A
-P 2850 6600
-F 0 "U2" H 2850 7450 60  0000 C CNN
-F 1 "teensy_3-2" V 2850 6750 60  0000 C CNN
-F 2 "teensy_3-2_bottomLess:Teensy3.2-bottomLess" H 2850 6750 60  0001 C CNN
-F 3 "" H 2850 6750 60  0001 C CNN
-	1    2850 6600
-	-1   0    0    1   
+P 2050 6800
+F 0 "U2" H 2050 7650 60  0000 C CNN
+F 1 "teensy_3-2" V 2050 6950 60  0000 C CNN
+F 2 "teensy_3-2_bottomLess:Teensy3.2-bottomLess" H 2050 6950 60  0001 C CNN
+F 3 "" H 2050 6950 60  0001 C CNN
+	1    2050 6800
+	1    0    0    -1  
 $EndComp
 $Comp
 L GND #PWR07
 U 1 1 59197249
-P 3350 7300
-F 0 "#PWR07" H 3350 7050 50  0001 C CNN
-F 1 "GND" H 3350 7150 50  0000 C CNN
-F 2 "" H 3350 7300 50  0001 C CNN
-F 3 "" H 3350 7300 50  0001 C CNN
-	1    3350 7300
-	0    -1   -1   0   
+P 1550 6100
+F 0 "#PWR07" H 1550 5850 50  0001 C CNN
+F 1 "GND" H 1550 5950 50  0000 C CNN
+F 2 "" H 1550 6100 50  0001 C CNN
+F 3 "" H 1550 6100 50  0001 C CNN
+	1    1550 6100
+	0    1    1    0   
 $EndComp
 Text GLabel 7650 6450 0    60   Input ~ 0
 MC_HI_U
@@ -371,7 +371,7 @@ PHASE_U
 Text GLabel 11250 4350 0    60   Input ~ 0
 V_SENS_U
 Text GLabel 7650 7250 0    60   Input ~ 0
-A_SENS_U
+A_SENS_V
 Text GLabel 13450 2400 2    60   Input ~ 0
 PHASE_V
 Text GLabel 15250 2400 2    60   Input ~ 0
@@ -387,40 +387,40 @@ F 3 "" H 11450 4750 50  0001 C CNN
 	1    11450 4750
 	1    0    0    -1  
 $EndComp
-Text GLabel 2350 6700 0    60   Input ~ 0
+Text GLabel 2550 6700 2    60   Input ~ 0
 MC_LO_W
-Text GLabel 3350 6600 2    60   Input ~ 0
+Text GLabel 1550 6800 0    60   Input ~ 0
 MC_HI_W
-Text GLabel 3350 6700 2    60   Input ~ 0
+Text GLabel 1550 6700 0    60   Input ~ 0
 MC_LO_V
-Text GLabel 2350 6800 0    60   Input ~ 0
+Text GLabel 2550 6600 2    60   Input ~ 0
 MC_HI_V
-Text GLabel 2350 7000 0    60   Input ~ 0
+Text GLabel 2550 6400 2    60   Input ~ 0
 MC_LO_U
-Text GLabel 2350 6900 0    60   Input ~ 0
+Text GLabel 2550 6500 2    60   Input ~ 0
 MC_HI_U
-Text GLabel 2350 6400 0    60   Input ~ 0
-A_SENS_U
-Text GLabel 2350 7500 0    60   Input ~ 0
+Text GLabel 2550 7000 2    60   Input ~ 0
+A_SENS_V
+Text GLabel 2550 5900 2    60   Input ~ 0
 V_SENS_U
-Text GLabel 2350 6500 0    60   Input ~ 0
+Text GLabel 2550 6900 2    60   Input ~ 0
 V_SENS_V
-Text GLabel 2350 6600 0    60   Input ~ 0
-A_SENS_V
+Text GLabel 2550 6800 2    60   Input ~ 0
+A_SENS_W
 Text GLabel 7650 7350 0    60   Input ~ 0
-A_SENS_V
-Text GLabel 2350 6300 0    60   Input ~ 0
+A_SENS_W
+Text GLabel 2550 7100 2    60   Input ~ 0
 V_SENS_W
 $Comp
 L GND #PWR09
 U 1 1 5926BFB4
-P 2350 7200
-F 0 "#PWR09" H 2350 6950 50  0001 C CNN
-F 1 "GND" H 2350 7050 50  0000 C CNN
-F 2 "" H 2350 7200 50  0001 C CNN
-F 3 "" H 2350 7200 50  0001 C CNN
-	1    2350 7200
-	0    1    1    0   
+P 2550 6200
+F 0 "#PWR09" H 2550 5950 50  0001 C CNN
+F 1 "GND" H 2550 6050 50  0000 C CNN
+F 2 "" H 2550 6200 50  0001 C CNN
+F 3 "" H 2550 6200 50  0001 C CNN
+	1    2550 6200
+	0    -1   -1   0   
 $EndComp
 $Comp
 L CONN_01X02 J3
@@ -441,20 +441,20 @@ Text GLabel 2900 4750 2    60   Input ~ 0
 MISO2
 Text GLabel 2900 4650 2    60   Input ~ 0
 MOSI2
-Text GLabel 3350 6100 2    60   Input ~ 0
+Text GLabel 1550 7300 0    60   Input ~ 0
 MOSI1
-Text GLabel 3350 6000 2    60   Input ~ 0
+Text GLabel 1550 7400 0    60   Input ~ 0
 MISO1
 $Comp
 L JUMPER JP1
 U 1 1 596F1F75
-P 1250 7300
-F 0 "JP1" H 1250 7450 50  0000 C CNN
-F 1 "JUMPER" H 1250 7220 50  0000 C CNN
-F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 1250 7300 50  0001 C CNN
-F 3 "" H 1250 7300 50  0000 C CNN
-	1    1250 7300
-	1    0    0    -1  
+P 3650 6100
+F 0 "JP1" H 3650 6250 50  0000 C CNN
+F 1 "JUMPER" H 3650 6020 50  0000 C CNN
+F 2 "Pin_Headers:Pin_Header_Straight_1x02_Pitch2.54mm" H 3650 6100 50  0001 C CNN
+F 3 "" H 3650 6100 50  0000 C CNN
+	1    3650 6100
+	-1   0    0    1   
 $EndComp
 NoConn ~ 1000 4900
 Text GLabel 2900 4950 2    60   Input ~ 0
@@ -473,13 +473,13 @@ $EndComp
 $Comp
 L C C2
 U 1 1 597222E7
-P 3350 7700
-F 0 "C2" H 3375 7800 50  0000 L CNN
-F 1 "10uF" H 3375 7600 50  0000 L CNN
-F 2 "Capacitors_SMD:C_1206_HandSoldering" H 3388 7550 50  0001 C CNN
-F 3 "" H 3350 7700 50  0001 C CNN
-	1    3350 7700
-	1    0    0    -1  
+P 1550 5700
+F 0 "C2" H 1575 5800 50  0000 L CNN
+F 1 "10uF" H 1575 5600 50  0000 L CNN
+F 2 "Capacitors_SMD:C_1206_HandSoldering" H 1588 5550 50  0001 C CNN
+F 3 "" H 1550 5700 50  0001 C CNN
+	1    1550 5700
+	-1   0    0    1   
 $EndComp
 $Comp
 L CONN_01X03 P2
@@ -505,7 +505,7 @@ F 3 "" H 4100 5000 50  0001 C CNN
 $EndComp
 Text GLabel 4850 5150 3    60   Input ~ 0
 3v3
-Text GLabel 3350 6200 2    60   Input ~ 0
+Text GLabel 1550 7200 0    60   Input ~ 0
 CS0
 $Comp
 L CONN_01X06 P1
@@ -550,9 +550,9 @@ F 3 "" H 2750 1750 50  0000 C CNN
 	1    2750 1750
 	1    0    0    -1  
 $EndComp
-Text GLabel 3350 6900 2    60   Input ~ 0
+Text GLabel 1550 6500 0    60   Input ~ 0
 CANTX
-Text GLabel 3350 6800 2    60   Input ~ 0
+Text GLabel 1550 6600 0    60   Input ~ 0
 CANRX
 Text GLabel 2250 1650 0    60   Input ~ 0
 CANRX
@@ -637,7 +637,7 @@ F 3 "" H 1500 1750 50  0001 C CNN
 	1    1500 1750
 	1    0    0    -1  
 $EndComp
-Text GLabel 950  7300 0    60   Input ~ 0
+Text GLabel 3950 6100 2    60   Input ~ 0
 5v
 Text GLabel 4850 4650 1    60   Input ~ 0
 5v
@@ -687,7 +687,7 @@ F 3 "" H 4200 5400 50  0001 C CNN
 $EndComp
 Text GLabel 4550 5700 0    60   Input ~ 0
 SIMPLE_INPUT
-Text GLabel 2350 7400 0    60   Input ~ 0
+Text GLabel 2550 6000 2    60   Input ~ 0
 SIMPLE_INPUT
 Text GLabel 10850 2200 0    60   Input ~ 0
 DRV_HI_U
@@ -790,9 +790,9 @@ F 3 "" H 8350 6200 60  0001 C CNN
 $EndComp
 Text GLabel 7650 6350 0    60   Input ~ 0
 EN_GATE
-Text GLabel 3350 7000 2    60   Input ~ 0
+Text GLabel 1550 6400 0    60   Input ~ 0
 EN_GATE
-Text GLabel 2350 7600 0    60   Input ~ 0
+Text GLabel 2550 5800 2    60   Input ~ 0
 MC_AREF
 $Comp
 L JUMPER JP2
@@ -958,7 +958,7 @@ NoConn ~ 7650 5150
 NoConn ~ 7650 5250
 Text GLabel 7400 5350 0    60   Input ~ 0
 DRV_FAULT
-Text GLabel 2350 5350 0    60   Input ~ 0
+Text GLabel 2550 8050 2    60   Input ~ 0
 DRV_FAULT
 $Comp
 L R R3
@@ -1473,7 +1473,7 @@ Text HLabel 9050 7050 2    60   Input ~ 0
 H_W_LO
 Text GLabel 6150 5750 0    60   Input ~ 0
 5v
-Text GLabel 2350 6200 0    60   Input ~ 0
+Text GLabel 2550 7200 2    60   Input ~ 0
 DC_CAL
 Text HLabel 14950 3300 0    60   Input ~ 0
 SHNT_W_LO
@@ -1536,7 +1536,7 @@ H_W_LO
 Text HLabel 13250 2850 2    60   Input ~ 0
 H_V_LO
 Wire Wire Line
-	1650 7100 2350 7100
+	3250 6300 2550 6300
 Wire Wire Line
 	2500 4550 2900 4550
 Wire Wire Line
@@ -1560,13 +1560,13 @@ Wire Wire Line
 Wire Wire Line
 	2500 4750 2900 4750
 Wire Wire Line
-	1550 7300 2350 7300
+	3350 6100 2550 6100
 Wire Wire Line
-	3350 7550 3350 7300
+	1550 5850 1550 6100
 Wire Wire Line
-	1650 7100 1650 7850
+	3250 6300 3250 5550
 Wire Wire Line
-	1650 7850 3350 7850
+	3250 5550 1550 5550
 Wire Wire Line
 	2500 2950 2900 2950
 Wire Wire Line
@@ -1704,7 +1704,7 @@ Wire Wire Line
 Connection ~ 7000 4250
 Connection ~ 7400 4250
 Wire Wire Line
-	2350 5350 2650 5350
+	2550 8050 2250 8050
 Wire Wire Line
 	7650 5050 6150 5050
 Wire Wire Line
@@ -2036,4 +2036,6 @@ Text GLabel 14550 6550 0    60   Input ~ 0
 PHASE_V
 Text GLabel 14550 7100 0    60   Input ~ 0
 PHASE_W
+Text Notes 5950 7350 0    60   ~ 0
+v & w current pins are flipped !\nCHANGE
 $EndSCHEMATC

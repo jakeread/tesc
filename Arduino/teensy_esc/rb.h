@@ -13,6 +13,8 @@
 #include <Arduino.h>
 #include "config.h"
 
+#define RBUF_LENGTH 128
+
 class RingBuffer {
   
   public:

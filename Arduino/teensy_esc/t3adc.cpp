@@ -103,9 +103,9 @@ void T3ADC::init(){
   ADC1_SC3 |= ADC_SC3_AVGE | ADC_SC3_AVGS(2); // not continuous conversion, hardware average enabled, 4 samples
   // ADC1 Interrupt Setup / Triggers
   // interrupt enable and select ADC1_DM1 channel // channel -> pin in chart above (thx pevide)
-  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5, 19, V
+  ADC0_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(12); // A5, 19
   // ADC0_CFG2 |= ADC_CFG2_MUXSEL;
-  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(9); // A3, 17, U
+  ADC1_SC1A = ADC_SC1_AIEN | ADC_SC1_ADCH(9); // A3, 17
   // enable ADC1, ADC0 alternate trigger select, and select trigger 8 (ftm0)
   SIM_SOPT7 = SIM_SOPT7_ADC1ALTTRGEN | SIM_SOPT7_ADC1TRGSEL(8) | SIM_SOPT7_ADC0ALTTRGEN | SIM_SOPT7_ADC0TRGSEL(8); 
   // Setup ADC1, ADC0 Interrupt
@@ -118,12 +118,12 @@ void T3ADC::init(){
 
 void adc0_isr(void){
   if(ADC0_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    KERNEL->foc->t3adc->rbaw->push((uint16_t)ADC0_RA); // adc result data register
+    KERNEL->foc->t3adc->rbav->push((uint16_t)ADC0_RA); // adc result data register
   }
 }
 
 void adc1_isr(void){ // not an object f'n bc triggered in some depths of teensy core that I don't understand
   if(ADC1_SC1A & ADC_SC1_COCO){ // status regitser & conversion & complete flag
-    KERNEL->foc->t3adc->rbav->push((uint16_t)ADC1_RA); // adc result data register
+    KERNEL->foc->t3adc->rbaw->push((uint16_t)ADC1_RA); // adc result data register
   }
 }
