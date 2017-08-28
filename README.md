@@ -4,9 +4,10 @@
 ![FOCT System](https://raw.githubusercontent.com/jakeread/tesc/master/Documentation/foct-test-v0-1.png)
 
 ## Briefly
-FOCT does closed-loop control of brushless dc (BLDC) motors: the type normally found in RC Cars, Airplanes, Drones etc. These motors are incredibly power-dense, making them an excellent candidate for Robotics applications. However, it's very difficult to control them at low speeds, and control them reliably at high speeds. 
+FOCT does closed-loop control of brushless dc (BLDC) motors: the type normally found in RC Cars, Airplanes, Drones etc. These motors are incredibly power-dense, making them an excellent candidate for Robotics applications. However, it's very difficult to control them at low speeds and in small position intervals. 
 
 FOCT implements 'all the bells and whistles' found in high-end robotics motor controllers (encoder feedback, BEMF & current sensing, etc) in a relatively low-cost solution. Code is written in Arduino for the Teensy Microcontroller, and is meant to be easily extensible and pick-through-able.
+
 FOCT is in development! So is it's documentation!
 
 ## The Hardware  
@@ -28,3 +29,16 @@ FOCT runs on Arduino! It uses Teensy's built interval timers to handle fast-loop
 
 ## How it Works: Field-Oriented Control
 // FOC ! Transforms, current measurement, UVW || AB || IQ frames  
+
+## TBD's, software
+- Proper filtering on Current measurement, encoder measurement  
+- Tuning the FOC loop  
+- Encoder Offset Discovery routine  
+- Auto Tuning, interface, system integration, oh my
+
+## TBD's, hardware
+- ADC voltage divider to sense VBUS voltage
+- More DAC outputs / testing pins so to tune FOC
+- SMD Thermistor near the FETS ?  
+- Go to STM32F4 & chibios ?
+- Caps could be closer to FETS, heatsink strap 
