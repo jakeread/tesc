@@ -2,8 +2,8 @@
 #define FOC_H
 
 #include <Arduino.h>
-#include "svpwm.h"
 #include "t3adc.h"
+#include "t3pwm.h"
 #include "rbf.h"
 #include "rb.h"
 #include "constants.h"
@@ -16,9 +16,7 @@ class FOC {
     void init();
     void onMainLoop();    
 
-    IntervalTimer* timer;
-
-    SVPWM* svpwm;
+    T3PWM* t3pwm;
     T3ADC* t3adc;
 
     static volatile long _loopCount;

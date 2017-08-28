@@ -14,7 +14,6 @@
 // communication
 #include "sp.h"
 #include "shell.h"
-#include "streamer.h"
 
 Kernel* Kernel::instance;
 
@@ -35,7 +34,6 @@ Kernel::Kernel() {
 
   this->sp = new SP();
   this->shell = new Shell();
-  this->streamer = new Streamer();
 }
 
 void Kernel::init() {
@@ -50,7 +48,6 @@ void Kernel::init() {
   
   this->sp->init();
   this->shell->init();
-  this->streamer->init();
   
   #if IS_BLDC_MACHINE
   this->bldc->init();

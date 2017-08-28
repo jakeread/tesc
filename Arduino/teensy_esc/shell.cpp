@@ -1,7 +1,6 @@
 #include "shell.h"
 #include "kernel.h"
 
-#include "streamer.h"
 #include "bldc.h"
 #include "as5047.h"
 
@@ -15,7 +14,6 @@ void Shell::init(){
 
 const Shell::command_entry Shell::command_table[] = {
   {"test",         Shell::cmd_test},
-  {"streamer",     Shell::cmd_streamer},         // for starting, stopping, setting stream vars
   {"timers",       Shell::cmd_timers},
   {"tr",           Shell::cmd_tr},
   {"encoder",      Shell::cmd_encoder},
@@ -103,54 +101,6 @@ void Shell::parseCommand(String message) {
 // --------------------------------------------------------------------------- CMD_TEST
 void Shell::cmd_test(String args[ARGWORDS]) {
   Serial.println("Shell Test...");
-}
-
-// --------------------------------------------------------------------------- CMD_STREAMER
-void Shell::cmd_streamer(String args[ARGWORDS]) {
-  Serial.println("Shell Streamer: ");
-  if (args[0] == "start") {                       // START
-    if (KERNEL->streamer->start()) {
-      Serial.println("Starting stream...");
-    } else {
-      Serial.println("Stream already started.");
-    }
-  } else if (args[0] == "stop") {                 // STOP
-    if (KERNEL->streamer->stop()) {
-      Serial.println("Stopping stream...");
-    } else {
-      Serial.println("Stream already stopped.");
-    }
-  } else if (args[0] == "hz") {                   // HZ
-    int hzUpdate = args[1].toInt();
-    if (hzUpdate) { // i.e. if not 0
-      if (KERNEL->streamer->setHz(hzUpdate)) {
-        Serial.print("Streamer HZ set to: ");
-        Serial.println(hzUpdate);
-      } else {
-        Serial.print("Stream HZ is: ");
-        Serial.println(KERNEL->streamer->getHz());
-      }
-    }
-  } else if (args[0] == "setvars") {                  // SETVARS
-    if (args[1] == "test") {
-      KERNEL->streamer->setVarSet(VARSET_ID_TEST);
-      Serial.println("Streaming test variables...");
-    } else if (args[1] == "voltages") {
-      KERNEL->streamer->setVarSet(VARSET_ID_VOLTAGES);
-      Serial.println("Streaming voltages...");
-    } else if (args[1] == "currents") {
-      KERNEL->streamer->setVarSet(VARSET_ID_CURRENTS);
-      Serial.println("Streaming currents...");
-    } else {
-      Serial.print("Streamer current varset is: ");
-      Serial.println(KERNEL->streamer->getVarSet());
-    }
-  } else {                                            // DEFAULT
-    Serial.print("HZ is: ");
-    Serial.print(KERNEL->streamer->getHz());
-    Serial.print(" varset is: ");
-    Serial.println(KERNEL->streamer->getVarSet());
-  }
 }
 
 // --------------------------------------------------------------------------- CMD_TIMERS

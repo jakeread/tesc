@@ -34,7 +34,6 @@ class Shell{
   bool _found;
 
   static void cmd_test(String args[ARGWORDS]);
-  static void cmd_streamer(String args[ARGWORDS]);
   static void cmd_timers(String args[ARGWORDS]);
   static void cmd_tr(String args[ARGWORDS]);
   static void cmd_encoder(String args[ARGWORDS]);

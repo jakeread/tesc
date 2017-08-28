@@ -23,7 +23,6 @@ class VSens;
 
 class SP;
 class Shell;
-class Streamer;
 
 // a good place to parse config values?
 // how to auto-instance ? so that on #including Kernel.h it's available?
@@ -55,7 +54,6 @@ class Kernel{
 
   SP* sp;
   Shell* shell;
-  Streamer* streamer;
 
   static int _loopCount;
   
